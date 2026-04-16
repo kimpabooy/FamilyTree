@@ -1,14 +1,15 @@
 ﻿using Backend.Core.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Backend.Infrastructure.Data
 {
     public class AppDbContext : IdentityDbContext<User>
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<FamilyTree> FamilyTrees { get; set; }
         public DbSet<Person> Persons { get; set; }
@@ -53,6 +54,7 @@ namespace Backend.Infrastructure.Data
                 .WithMany(u => u.Trees)
                 .HasForeignKey(t => t.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }

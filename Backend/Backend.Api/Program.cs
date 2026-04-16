@@ -1,7 +1,9 @@
-using Backend.Core.Models;
 using Backend.Infrastructure.Data;
+using Backend.Core.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using DotNetEnv;
 
 namespace Backend.WebApi
 {
@@ -9,7 +11,12 @@ namespace Backend.WebApi
     {
         public static async Task Main(string[] args)
         {
+            // Ladda .env så att variabler skrivs in i Environment innan konfiguration byggs
+            Env.Load(".env");
+
             var builder = WebApplication.CreateBuilder(args);
+
+            Console.WriteLine($"Configuration SeedData = '{builder.Configuration["SeedData"]}'");
 
             // Database connection.
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -17,9 +24,22 @@ namespace Backend.WebApi
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Backend.Infrastructure")));
 
-            // Configure ASP.NET Core Identity for Web API
-            builder.Services.AddIdentityApiEndpoints<User>()
-                .AddEntityFrameworkStores<AppDbContext>();
+            // Register Identity with roles so RoleManager is available
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                // Password settings - adjust as needed
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+            // NOTE: Removed builder.Services.AddIdentityApiEndpoints<User>();
+            // If you need Scalar's Identity endpoints, use the Scalar overload that does NOT re-register schemes,
+            // or remove the explicit AddIdentity<> call above and rely on Scalar's helper instead.
 
             // Controllers and API-documentation
             builder.Services.AddControllers();
@@ -43,21 +63,25 @@ namespace Backend.WebApi
 
             // API endpoints
             app.MapControllers();
-            app.MapIdentityApi<User>();
 
-            // Create a temporary scope to run DI services before Run()
+            // Seed the database with initial data if configured to do so.
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+
                 try
                 {
-                    // Run the database seeding
-                    await IdentitySeed.InitializeAsync(services);
-                    await SeedData.InitializeAsync(services);
+                    var config = services.GetRequiredService<IConfiguration>();
+                    var shouldSeed = config.GetValue<bool>("SeedData");
+
+                    if (shouldSeed)
+                    {
+                        await IdentitySeed.InitializeAsync(services);
+                        await SeedData.InitializeAsync(services);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Logging potential errors during seeding
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred while seeding the database.");
                 }

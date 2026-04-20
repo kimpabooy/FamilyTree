@@ -6,6 +6,7 @@ using Scalar.AspNetCore;
 using DotNetEnv;
 using Backend.Core.Interface;
 using Backend.Infrastructure.Repositories;
+using Backend.Services.DependencyInjection;
 
 namespace Backend.WebApi
 {
@@ -13,7 +14,7 @@ namespace Backend.WebApi
     {
         public static async Task Main(string[] args)
         {
-            // Ladda .env så att variabler skrivs in i Environment innan konfiguration byggs
+            // Läser in miljövariabler från .env-filen i projektets rotkatalog
             Env.Load(".env");
 
             var builder = WebApplication.CreateBuilder(args);
@@ -39,8 +40,11 @@ namespace Backend.WebApi
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // Registration of repositories via UnitofWork
+            // UnitofWork
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Service layer
+            builder.Services.AddServiceLayer();
 
             // Controllers and API-documentation
             builder.Services.AddControllers();

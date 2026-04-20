@@ -13,6 +13,7 @@ namespace Backend.Services.DependencyInjection
             services.AddScoped<IParentChildRelationService, ParentChildRelationService>();
             services.AddScoped<IPartnerRelationService, PartnerRelationService>();
             services.AddScoped<IFamilyTreeService, FamilyTreeService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             return services;
         }

@@ -7,6 +7,12 @@ using DotNetEnv;
 using Backend.Core.Interface;
 using Backend.Infrastructure.Repositories;
 using Backend.Services.DependencyInjection;
+using Backend.Services.Auth;
+using Backend.Services.Interface;
+using Backend.Services.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Backend.WebApi
 {
@@ -15,8 +21,7 @@ namespace Backend.WebApi
         public static async Task Main(string[] args)
         {
             // Läser in miljövariabler från .env-filen i projektets rotkatalog
-            Env.Load(".env");
-
+            Env.Load("../.env");
             var builder = WebApplication.CreateBuilder(args);
 
             Console.WriteLine($"Configuration SeedData = '{builder.Configuration["SeedData"]}'");
@@ -40,8 +45,46 @@ namespace Backend.WebApi
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // UnitofWork
+            // JWT Authentication
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            builder.Services.AddOptions<JwtSettings>()
+                   .Bind(jwtSection)
+                   .ValidateDataAnnotations()
+                   .Validate(s => !string.IsNullOrWhiteSpace(s.Key) && s.Key.Length >= 32, 
+                   "Jwt:Key must be set and at least 32 chars.");
+            var jwtSettings = jwtSection.Get<JwtSettings>() ?? throw new InvalidOperationException("Missing Jwt configuration");
+
+            // Debugging output to verify JWT configuration presence
+            Console.WriteLine($"Env Jwt__Key present: {Environment.GetEnvironmentVariable("Jwt__Key") != null}");
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = true;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                    ValidateIssuer = !string.IsNullOrEmpty(jwtSettings.Issuer),
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidateAudience = !string.IsNullOrEmpty(jwtSettings.Audience),
+                    ValidAudience = jwtSettings.Audience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            // UnitOfWork
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Register JWT/token services
+            builder.Services.AddScoped<JwtTokenService>();
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             // Service layer
             builder.Services.AddServiceLayer();

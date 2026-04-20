@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using DotNetEnv;
+using Backend.Core.Interface;
+using Backend.Infrastructure.Repositories;
 
 namespace Backend.WebApi
 {
@@ -37,9 +39,8 @@ namespace Backend.WebApi
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // NOTE: Removed builder.Services.AddIdentityApiEndpoints<User>();
-            // If you need Scalar's Identity endpoints, use the Scalar overload that does NOT re-register schemes,
-            // or remove the explicit AddIdentity<> call above and rely on Scalar's helper instead.
+            // Registration of repositories via UnitofWork
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Controllers and API-documentation
             builder.Services.AddControllers();

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Backend.Core.Interface
 {
@@ -10,6 +12,6 @@ namespace Backend.Core.Interface
             IPartnerRelationRepository PartnerRelationRepository { get; }
             IFamilyTreeRepository FamilyTreeRepository { get; }
 
-            Task<int> SaveChangesAsync();
+            Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

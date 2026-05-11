@@ -23,9 +23,9 @@ namespace Backend.Infrastructure.Repositories
         public IPartnerRelationRepository PartnerRelationRepository => _partnerRelationRepository ??= new PartnerRelationRepository(_context);
         public IFamilyTreeRepository FamilyTreeRepository => _familyTreeRepository ??= new FamilyTreeRepository(_context);
 
-        public Task<int> SaveChangesAsync()
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return _context.SaveChangesAsync();
+            return _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

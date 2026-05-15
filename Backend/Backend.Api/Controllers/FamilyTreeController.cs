@@ -16,32 +16,41 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFamilyTree(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var familyTree = await _familyTreeService.GetFamilyTreeAsync(cancellationToken);
-            if (familyTree is null) return NotFound();
-
-            return Ok(familyTree);
+            var trees = await _familyTreeService.GetAllAsync(cancellationToken);
+            return Ok(trees);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
-            var tree = await _familyTreeService.GetFamilyTreeByIdAsync(id, cancellationToken);
+            var tree = await _familyTreeService.GetByIdAsync(id, cancellationToken);
             if (tree is null) return NotFound();
-            
             return Ok(tree);
         }
 
-        //[HttpPost]
-        // TODO: fix POST and Add validation and error handling
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] FamilyTree familyTree, CancellationToken cancellationToken)
+        {
+            var created = await _familyTreeService.CreateAsync(familyTree, cancellationToken);
+            if (created is null) return BadRequest();
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
 
-        //public async Task<IActionResult> CreateFamilyTree(FamilyTree familyTree, CancellationToken cancellationToken)
-        //{
-        //    var createdFamilyTree = await _familyTreeService.CreateFamilyTreeAsync(familyTree, cancellationToken);
-        //    if (createdFamilyTree is null) return BadRequest();
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] FamilyTree familyTree, CancellationToken cancellationToken)
+        {
+            var updated = await _familyTreeService.UpdateAsync(id, familyTree, cancellationToken);
+            if (updated is null) return NotFound();
+            return Ok(updated);
+        }
 
-        //    return CreatedAtAction(nameof(GetById), new { id = createdFamilyTree.Id }, createdFamilyTree);
-        //}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        {
+            var deleted = await _familyTreeService.DeleteAsync(id, cancellationToken);
+            return deleted ? NoContent() : NotFound();
+        }
     }
 }

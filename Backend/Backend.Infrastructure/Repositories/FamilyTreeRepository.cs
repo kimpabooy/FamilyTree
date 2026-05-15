@@ -27,11 +27,32 @@ namespace Backend.Infrastructure.Repositories
             return await _context.FamilyTrees.FirstOrDefaultAsync(ft => ft.Id == id, cancellationToken);
         }
 
-        public FamilyTree Add(FamilyTree familyTree)
+        public Task<FamilyTree> Add(FamilyTree familyTree)
         {
             var entry = _context.FamilyTrees.Add(familyTree);
-            return entry.Entity;
+            return Task.FromResult(entry.Entity);
         }
 
+        public Task UpdateAsync(int id, FamilyTree familyTree)
+        {
+            var updateEntity = _context.FamilyTrees.Find(id);
+            if (updateEntity != null)
+            {
+                updateEntity.Name = familyTree.Name;
+                updateEntity.IsPublic = familyTree.IsPublic;
+                updateEntity.OwnerId = familyTree.OwnerId;
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync(int id)
+        {
+            var deleteEntity = _context.FamilyTrees.Find(id);
+            if (deleteEntity != null)
+            {
+                _context.FamilyTrees.Remove(deleteEntity);
+            }
+            return Task.CompletedTask;
+        }
     }
 }

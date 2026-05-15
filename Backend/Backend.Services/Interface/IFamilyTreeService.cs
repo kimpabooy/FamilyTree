@@ -1,13 +1,13 @@
 ﻿using Backend.Core.Models;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Backend.Services.Interface
 {
     public interface IFamilyTreeService
     {
-        Task<FamilyTree?> GetFamilyTreeAsync(CancellationToken cancellationToken = default);
-        Task<FamilyTree?> GetFamilyTreeByIdAsync(int id, CancellationToken cancellationToken = default);
-        Task<FamilyTree?> CreateFamilyTreeAsync(FamilyTree familyTree, CancellationToken cancellationToken = default);
+        Task<IEnumerable<FamilyTree>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<FamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<FamilyTree?> CreateAsync(FamilyTree familyTree, CancellationToken cancellationToken = default);
+        Task<FamilyTree?> UpdateAsync(int id, FamilyTree familyTree, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

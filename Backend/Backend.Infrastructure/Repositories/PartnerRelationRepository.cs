@@ -14,9 +14,31 @@ namespace Backend.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<PartnerRelation>> GetAllAsync()
+        public async Task<PartnerRelation?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.PartnerRelations.ToListAsync();
+            return await _context.PartnerRelations
+                .FirstOrDefaultAsync(pr => pr.Id == id, cancellationToken);
+        }
+
+        public async Task<IEnumerable<PartnerRelation>> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
+        {
+            // Hämtar relationer där personen är antingen Person1 eller Person2
+            return await _context.PartnerRelations
+                .Include(pr => pr.Person1)
+                .Include(pr => pr.Person2)
+                .Where(pr => pr.Person1Id == personId || pr.Person2Id == personId)
+                .ToListAsync(cancellationToken);
+        }
+
+        public PartnerRelation Add(PartnerRelation relation)
+        {
+            var entry = _context.PartnerRelations.Add(relation);
+            return entry.Entity;
+        }
+
+        public void Remove(PartnerRelation relation)
+        {
+            _context.PartnerRelations.Remove(relation);
         }
     }
 }

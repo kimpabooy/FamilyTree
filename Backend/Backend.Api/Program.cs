@@ -1,18 +1,19 @@
-using Backend.Infrastructure.Data;
-using Backend.Core.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
-using DotNetEnv;
 using Backend.Core.Interface;
+using Backend.Core.Models;
+using Backend.Infrastructure.Data;
 using Backend.Infrastructure.Repositories;
-using Backend.Services.DependencyInjection;
 using Backend.Services.Auth;
+using Backend.Services.DependencyInjection;
 using Backend.Services.Interface;
 using Backend.Services.Services;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Backend.WebApi
 {
@@ -90,7 +91,11 @@ namespace Backend.WebApi
             builder.Services.AddServiceLayer();
 
             // Controllers and API-documentation
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            }); 
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddOpenApi();
 

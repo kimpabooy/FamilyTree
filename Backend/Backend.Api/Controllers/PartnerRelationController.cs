@@ -1,9 +1,13 @@
 ﻿using Backend.Core.Models;
 using Backend.Services.Interface;
+using Backend.Services.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
 {
+    public record CreatePartnerRequest(int Person1Id, int Person2Id, PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
+    public record UpdatePartnerRequest(PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
+
     [Route("api/relations/partner")]
     [ApiController]
     public class PartnerRelationController : ControllerBase
@@ -13,6 +17,13 @@ namespace Backend.Api.Controllers
         public PartnerRelationController(IPartnerRelationService partnerService)
         {
             _partnerService = partnerService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        {
+            var partners = await _partnerService.GetAllAsync(cancellationToken);
+            return Ok(partners);
         }
 
         [HttpGet("{personId}")]
@@ -59,6 +70,5 @@ namespace Backend.Api.Controllers
         }
     }
 
-    public record CreatePartnerRequest(int Person1Id, int Person2Id, PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
-    public record UpdatePartnerRequest(PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
+
 }

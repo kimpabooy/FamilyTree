@@ -8,7 +8,7 @@ namespace Backend.Core.Interface
         Task<FamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<FamilyTree> Add(FamilyTree familyTree);
         Task UpdateAsync(int id, FamilyTree familyTree);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(int id, CancellationToken cancellationToken);
 
     }
 }

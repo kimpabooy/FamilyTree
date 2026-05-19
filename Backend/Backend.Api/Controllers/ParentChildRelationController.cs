@@ -1,4 +1,5 @@
-﻿using Backend.Services.Interface;
+﻿using Backend.Services.DTOs.Relations;
+using Backend.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
@@ -7,25 +8,27 @@ namespace Backend.Api.Controllers
     [ApiController]
     public class ParentChildRelationController : ControllerBase
     {
-        private readonly IParentChildRelationService _service;
+        private readonly IParentChildRelationService _parentChildRelationService;
 
-        public ParentChildRelationController(IParentChildRelationService service)
+        public ParentChildRelationController(IParentChildRelationService parentChildRelationService)
         {
-            _service = service;
+            _parentChildRelationService = parentChildRelationService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ParentChildRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponseParentChildRelation>> Create(
+            [FromBody] RequestCreateParentChildRelation parentIdDto, [FromQuery] RequestCreateParentChildRelation childIdDto, CancellationToken cancellationToken)
         {
-            var created = await _service.CreateAsync(request.ParentId, request.ChildId, cancellationToken);
-            if (created is null) return Conflict("Relationen finns redan.");
-            return Ok(created);
+            var createRelation = await _parentChildRelationService.CreateAsync(parentIdDto, childIdDto, cancellationToken);
+            if (createRelation is null) return Conflict("Relationen finns redan.");
+            
+            return Ok(createRelation);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var deleted = await _service.DeleteAsync(id, cancellationToken);
+            var deleted = await _parentChildRelationService.DeleteAsync(id, cancellationToken);
             return deleted ? NoContent() : NotFound();
         }
     }

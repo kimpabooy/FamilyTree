@@ -8,5 +8,6 @@ namespace Backend.Services.Interface
         Task<PartnerRelation?> CreateAsync(int person1Id, int person2Id, PartnerType partnerType, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default);
         Task<PartnerRelation?> UpdateAsync(int id, PartnerType partnerType, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<IEnumerable<PartnerRelation>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }

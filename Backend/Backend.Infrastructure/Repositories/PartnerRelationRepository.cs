@@ -40,5 +40,13 @@ namespace Backend.Infrastructure.Repositories
         {
             _context.PartnerRelations.Remove(relation);
         }
+
+        public Task<IEnumerable<PartnerRelation>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_context.PartnerRelations
+                .Include(pr => pr.Person1)
+                .Include(pr => pr.Person2)
+                .AsEnumerable());
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Backend.Core.Interface;
+﻿    using Backend.Core.Interface;
 using Backend.Core.Models;
 using Backend.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +45,7 @@ namespace Backend.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync(int id)
+        public Task DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var deleteEntity = _context.FamilyTrees.Find(id);
             if (deleteEntity != null)

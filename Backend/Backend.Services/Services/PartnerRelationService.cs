@@ -57,5 +57,11 @@ namespace Backend.Services.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        public Task<IEnumerable<PartnerRelation>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            var allPartners = _unitOfWork.PartnerRelationRepository.GetAllAsync(cancellationToken);
+            return allPartners;
+        }
     }
 }

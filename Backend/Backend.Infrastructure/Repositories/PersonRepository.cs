@@ -33,10 +33,14 @@ namespace Backend.Infrastructure.Repositories
             return entry.Entity;
         }
 
-        public async Task RemoveAsync(Person person, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            _context.Persons.Remove(person);
-            await _context.SaveChangesAsync(cancellationToken);
+            var deleteEntity = _context.Persons.Find(id);
+            if (deleteEntity != null)
+            {
+               _context.Persons.Remove(deleteEntity);
+            }
+            return Task.CompletedTask;
         }
     }
 }

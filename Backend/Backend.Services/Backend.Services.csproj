@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\Relations\" />
     <Folder Include="DTOs\Auth\" />
   </ItemGroup>
 

@@ -18,4 +18,10 @@
     <ProjectReference Include="..\Backend.Infrastructure\Backend.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\Relations\" />
+    <Folder Include="DTOs\Auth\" />
+    <Folder Include="DTOs\Person\" />
+  </ItemGroup>
+
 </Project>

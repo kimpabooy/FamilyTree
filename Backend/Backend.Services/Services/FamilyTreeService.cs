@@ -97,7 +97,6 @@ namespace Backend.Services.Services
             var existing = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return false;
 
-            // OBS: FamilyTreeRepository saknar Remove() ännu — lägg till den om du vill ha delete
              await _unitOfWork.FamilyTreeRepository.DeleteAsync(existing.Id, cancellationToken);
              await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;

@@ -1,7 +1,5 @@
-﻿using Backend.Core.Models;
-using Backend.Services.DTOs.Person;
+﻿using Backend.Services.DTOs.Person;
 using Backend.Services.Interface;
-using Backend.Services.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
@@ -25,16 +23,14 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet("tree/{familyTreeId}")]
-        public async Task<IEnumerable<ResponsePerson>> GetAllByTree(int familyTreeId, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ResponsePerson>>> GetAllByTree(int familyTreeId, CancellationToken cancellationToken)
         {
             var persons = await _personService.GetAllByFamilyTreeIdAsync(familyTreeId, cancellationToken);
-            return persons;
-
-            //return Ok(persons);
+            return Ok(persons);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePerson>> GetById(int id, CancellationToken cancellationToken)
         {
             var person = await _personService.GetByIdAsync(id, cancellationToken);
             if (person is null) return NotFound();
@@ -42,40 +38,36 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet("{id}/family")]
-        public async Task<IActionResult> GetFamily(int id, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePersonFamily>> GetFamily(int id, CancellationToken cancellationToken)
         {
             var person = await _personService.GetByIdAsync(id, cancellationToken);
             if (person is null) return NotFound();
 
-            var parents = await _parentChildService.GetParentsAsync(id, cancellationToken);
-            var children = await _parentChildService.GetChildrenAsync(id, cancellationToken);
-            var siblings = await _parentChildService.GetSiblingsAsync(id, cancellationToken);
-            var grandparents = await _parentChildService.GetGrandparentsAsync(id, cancellationToken);
-            var partners = await _partnerService.GetByPersonIdAsync(id, cancellationToken);
-
-            return Ok(new
+            var response = new ResponsePersonFamily
             {
-                person,
-                parents,
-                children,
-                siblings,
-                grandparents,
-                partners
-            });
+                Person = person,
+                Parents = await _parentChildService.GetParentsAsync(id, cancellationToken),
+                Children = await _parentChildService.GetChildrenAsync(id, cancellationToken),
+                Siblings = await _parentChildService.GetSiblingsAsync(id, cancellationToken),
+                Grandparents = await _parentChildService.GetGrandparentsAsync(id, cancellationToken),
+                Partners = await _partnerService.GetByPersonIdAsync(id, cancellationToken)
+            };
+
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] RequestCreatePerson requestCreatePersonDto, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePerson>> Create([FromBody] RequestCreatePerson request, CancellationToken cancellationToken)
         {
-            var created = await _personService.CreateAsync(requestCreatePersonDto, cancellationToken);
+            var created = await _personService.CreateAsync(request, cancellationToken);
             if (created is null) return BadRequest();
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] RequestUpdatePerson requestUpdatePersonDto, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePerson>> Update(int id, [FromBody] RequestUpdatePerson request, CancellationToken cancellationToken)
         {
-            var updated = await _personService.UpdateAsync(id, requestUpdatePersonDto, cancellationToken);
+            var updated = await _personService.UpdateAsync(id, request, cancellationToken);
             if (updated is null) return NotFound();
             return Ok(updated);
         }
@@ -84,9 +76,7 @@ namespace Backend.Api.Controllers
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var deleted = await _personService.DeleteAsync(id, cancellationToken);
-            if (!deleted) return NotFound();
-
-            return Ok(deleted);
+            return deleted ? NoContent() : NotFound();
         }
     }
 }

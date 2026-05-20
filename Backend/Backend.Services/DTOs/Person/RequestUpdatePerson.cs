@@ -2,14 +2,14 @@
 
 namespace Backend.Services.DTOs.Person
 {
+    // FamilyTreeId ingår inte — man byter inte träd via en person-uppdatering.
     public class RequestUpdatePerson
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public DateTime? BirthDate { get; set; }
         public DateTime? DeathDate { get; set; }
-        public Gender Gender { get; set; } = Gender.Other; // Default to Other if not specified
+        public Gender Gender { get; set; }
         public string? ProfileImageUrl { get; set; }
-        public int? FamilyTreeId { get; set; }
     }
 }

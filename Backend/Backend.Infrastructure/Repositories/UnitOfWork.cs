@@ -6,26 +6,32 @@ namespace Backend.Infrastructure.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-        private IUserRepository _userRepository;
-        private IPersonRepository _personRepository;
-        private IParentChildRelationRepository _parentChildRelationRepository;
-        private IPartnerRelationRepository _partnerRelationRepository;
-        private IFamilyTreeRepository _familyTreeRepository;
 
-        public UnitOfWork(AppDbContext context)
+        public IFamilyTreeRepository FamilyTreeRepository { get; }
+        public IPersonRepository PersonRepository { get; }
+        public IParentChildRelationRepository ParentChildRelationRepository { get; }
+        public IPartnerRelationRepository PartnerRelationRepository { get; }
+        public IUserRepository UserRepository { get; }
+
+        public UnitOfWork(
+            AppDbContext context,
+            IFamilyTreeRepository familyTreeRepository,
+            IPersonRepository personRepository,
+            IParentChildRelationRepository parentChildRelationRepository,
+            IPartnerRelationRepository partnerRelationRepository,
+            IUserRepository userRepository)
         {
             _context = context;
+            FamilyTreeRepository = familyTreeRepository;
+            PersonRepository = personRepository;
+            ParentChildRelationRepository = parentChildRelationRepository;
+            PartnerRelationRepository = partnerRelationRepository;
+            UserRepository = userRepository;
         }
 
-        public IUserRepository UserRepository => _userRepository ??= new UserRepository(_context);
-        public IPersonRepository PersonRepository => _personRepository ??= new PersonRepository(_context);
-        public IParentChildRelationRepository ParentChildRelationRepository => _parentChildRelationRepository ??= new ParentChildRelationRepository(_context);
-        public IPartnerRelationRepository PartnerRelationRepository => _partnerRelationRepository ??= new PartnerRelationRepository(_context);
-        public IFamilyTreeRepository FamilyTreeRepository => _familyTreeRepository ??= new FamilyTreeRepository(_context);
-
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return _context.SaveChangesAsync(cancellationToken);
+            return await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

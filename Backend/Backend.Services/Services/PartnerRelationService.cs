@@ -1,5 +1,6 @@
 ﻿using Backend.Core.Interface;
 using Backend.Core.Models;
+using Backend.Services.DTOs.Relations;
 using Backend.Services.Interface;
 
 namespace Backend.Services.Services
@@ -13,39 +14,43 @@ namespace Backend.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<PartnerRelation>> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ResponsePartnerRelation>> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
         {
-            return await _unitOfWork.PartnerRelationRepository.GetByPersonIdAsync(personId, cancellationToken);
+            var relations = await _unitOfWork.PartnerRelationRepository.GetByPersonIdAsync(personId, cancellationToken);
+            return relations.Select(r => MapToResponse(r, personId));
         }
 
-        public async Task<PartnerRelation?> CreateAsync(int person1Id, int person2Id, PartnerType partnerType, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default)
+        public async Task<ResponsePartnerRelation?> CreateAsync(RequestCreatePartnerRelation dto, CancellationToken cancellationToken = default)
         {
             var relation = new PartnerRelation
             {
-                Person1Id = person1Id,
-                Person2Id = person2Id,
-                PartnerType = partnerType,
-                FromDate = fromDate,
-                ToDate = toDate
+                Person1Id = dto.Person1Id,
+                Person2Id = dto.Person2Id,
+                PartnerType = dto.PartnerType,
+                FromDate = dto.FromDate,
+                ToDate = dto.ToDate
             };
 
             var created = _unitOfWork.PartnerRelationRepository.Add(relation);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return created;
+
+            // Ladda om med navigation properties för att kunna mappa Partner-person
+            var withNav = await _unitOfWork.PartnerRelationRepository.GetByIdAsync(created.Id, cancellationToken);
+            return withNav is null ? null : MapToResponse(withNav, dto.Person1Id);
         }
 
-        public async Task<PartnerRelation?> UpdateAsync(int id, PartnerType partnerType, DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default)
+        public async Task<ResponsePartnerRelation?> UpdateAsync(int id, RequestUpdatePartnerRelation dto, CancellationToken cancellationToken = default)
         {
             var existing = await _unitOfWork.PartnerRelationRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return null;
 
-            existing.PartnerType = partnerType;
-            existing.FromDate = fromDate;
-            existing.ToDate = toDate;
+            existing.PartnerType = dto.PartnerType;
+            existing.FromDate = dto.FromDate;
+            existing.ToDate = dto.ToDate;
             existing.UpdatedDate = DateOnly.FromDateTime(DateTime.Now);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return existing;
+            return MapToResponse(existing, existing.Person1Id);
         }
 
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -57,5 +62,20 @@ namespace Backend.Services.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        // Hjälpmetod för att mappa PartnerRelation till ResponsePartnerRelation.
+        // Eftersom en PartnerRelation har två personer (Person1 och Person2) och vi hämtar relationer utifrån en av personerna (partnerOfId), så måste vi avgöra vilken av de två personerna som är "den andre parten" i relationen.
+        // partnerOfId anger vems perspektiv vi mappar från — den andre parten blir Partner.
+        private static ResponsePartnerRelation MapToResponse(PartnerRelation relation, int partnerOfId) => new()
+        {
+            Id = relation.Id,
+            PartnerType = relation.PartnerType,
+            FromDate = relation.FromDate,
+            ToDate = relation.ToDate,
+            CreatedDate = relation.CreatedDate,
+            UpdatedDate = relation.UpdatedDate,
+            Partner = PersonService.MapToResponse(
+                relation.Person1Id == partnerOfId ? relation.Person2 : relation.Person1)
+        };
     }
 }

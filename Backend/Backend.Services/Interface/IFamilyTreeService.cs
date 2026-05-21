@@ -1,13 +1,14 @@
 ﻿using Backend.Core.Models;
+using Backend.Services.DTOs.FamilyTree;
 
 namespace Backend.Services.Interface
 {
     public interface IFamilyTreeService
     {
-        Task<IEnumerable<FamilyTree>> GetAllAsync(CancellationToken cancellationToken = default);
-        Task<FamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
-        Task<FamilyTree?> CreateAsync(FamilyTree familyTree, CancellationToken cancellationToken = default);
-        Task<FamilyTree?> UpdateAsync(int id, FamilyTree familyTree, CancellationToken cancellationToken = default);
+        Task<IEnumerable<ResponseFamilyTree>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<ResponseFamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, CancellationToken cancellationToken = default);
+        Task<ResponseFamilyTree?> UpdateAsync(int id, RequestUpdateFamilyTree request, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

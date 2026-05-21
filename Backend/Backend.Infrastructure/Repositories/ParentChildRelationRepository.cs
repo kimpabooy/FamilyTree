@@ -44,13 +44,11 @@ namespace Backend.Infrastructure.Repositories
 
         public async Task<IEnumerable<Person>> GetSiblingsAsync(int personId, CancellationToken cancellationToken = default)
         {
-            // Hämta alla föräldra-ID:n för personen
             var parentIds = await _context.ParentChildRelations
                 .Where(pc => pc.ChildId == personId)
                 .Select(pc => pc.ParentId)
                 .ToListAsync(cancellationToken);
 
-            // Hitta alla barn till dessa föräldrar, exkludera personen själv
             return await _context.ParentChildRelations
                 .Where(pc => parentIds.Contains(pc.ParentId) && pc.ChildId != personId)
                 .Select(pc => pc.Child)
@@ -60,7 +58,6 @@ namespace Backend.Infrastructure.Repositories
 
         public async Task<IEnumerable<Person>> GetGrandparentsAsync(int personId, CancellationToken cancellationToken = default)
         {
-            // Hämta föräldrarnas föräldrar
             var parentIds = await _context.ParentChildRelations
                 .Where(pc => pc.ChildId == personId)
                 .Select(pc => pc.ParentId)

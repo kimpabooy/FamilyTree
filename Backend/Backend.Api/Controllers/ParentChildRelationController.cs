@@ -1,4 +1,5 @@
-﻿using Backend.Services.Interface;
+﻿using Backend.Services.DTOs.Relations;
+using Backend.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
@@ -15,9 +16,9 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ParentChildRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponseParentChildRelation>> Create([FromBody] RequestCreateParentChildRelation request, CancellationToken cancellationToken)
         {
-            var created = await _service.CreateAsync(request.ParentId, request.ChildId, cancellationToken);
+            var created = await _service.CreateAsync(request, cancellationToken);
             if (created is null) return Conflict("Relationen finns redan.");
             return Ok(created);
         }
@@ -29,6 +30,4 @@ namespace Backend.Api.Controllers
             return deleted ? NoContent() : NotFound();
         }
     }
-
-    public record ParentChildRequest(int ParentId, int ChildId);
 }

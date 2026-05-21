@@ -26,17 +26,15 @@ namespace Backend.Infrastructure.Repositories
             return await _context.Persons.FirstOrDefaultAsync(person => person.Id == id, cancellationToken);
         }
 
-        public async Task<Person> AddAsync(Person person, CancellationToken cancellationToken = default)
+        public Person Add(Person person)
         {
-            var entry = await _context.Persons.AddAsync(person, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            var entry = _context.Persons.Add(person);
             return entry.Entity;
         }
 
-        public async Task RemoveAsync(Person person, CancellationToken cancellationToken = default)
+        public void Remove(Person person)
         {
             _context.Persons.Remove(person);
-            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

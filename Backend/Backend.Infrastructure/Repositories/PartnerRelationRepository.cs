@@ -17,12 +17,13 @@ namespace Backend.Infrastructure.Repositories
         public async Task<PartnerRelation?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.PartnerRelations
+                .Include(pr => pr.Person1)
+                .Include(pr => pr.Person2)
                 .FirstOrDefaultAsync(pr => pr.Id == id, cancellationToken);
         }
 
         public async Task<IEnumerable<PartnerRelation>> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default)
         {
-            // Hämtar relationer där personen är antingen Person1 eller Person2
             return await _context.PartnerRelations
                 .Include(pr => pr.Person1)
                 .Include(pr => pr.Person2)

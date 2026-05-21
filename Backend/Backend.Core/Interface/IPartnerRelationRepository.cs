@@ -8,6 +8,5 @@ namespace Backend.Core.Interface
         Task<IEnumerable<PartnerRelation>> GetByPersonIdAsync(int personId, CancellationToken cancellationToken = default);
         PartnerRelation Add(PartnerRelation relation);
         void Remove(PartnerRelation relation);
-        Task<IEnumerable<PartnerRelation>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }

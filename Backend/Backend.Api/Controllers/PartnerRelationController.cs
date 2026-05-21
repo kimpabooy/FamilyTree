@@ -1,63 +1,39 @@
-﻿using Backend.Core.Models;
+﻿using Backend.Services.DTOs.Relations;
 using Backend.Services.Interface;
-using Backend.Services.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
 {
-    public record CreatePartnerRequest(int Person1Id, int Person2Id, PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
-    public record UpdatePartnerRequest(PartnerType PartnerType, DateTime? FromDate, DateTime? ToDate);
-
     [Route("api/relations/partner")]
     [ApiController]
     public class PartnerRelationController : ControllerBase
     {
-        private readonly IPartnerRelationService _partnerService;
+        private readonly IPartnerRelationService _service;
 
-        public PartnerRelationController(IPartnerRelationService partnerService)
+        public PartnerRelationController(IPartnerRelationService service)
         {
-            _partnerService = partnerService;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
-        {
-            var partners = await _partnerService.GetAllAsync(cancellationToken);
-            return Ok(partners);
+            _service = service;
         }
 
         [HttpGet("{personId}")]
-        public async Task<IActionResult> GetByPerson(int personId, CancellationToken cancellationToken)
+        public async Task<ActionResult<IEnumerable<ResponsePartnerRelation>>> GetByPerson(int personId, CancellationToken cancellationToken)
         {
-            var partners = await _partnerService.GetByPersonIdAsync(personId, cancellationToken);
+            var partners = await _service.GetByPersonIdAsync(personId, cancellationToken);
             return Ok(partners);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePartnerRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePartnerRelation>> Create([FromBody] RequestCreatePartnerRelation request, CancellationToken cancellationToken)
         {
-            var created = await _partnerService.CreateAsync(
-                request.Person1Id,
-                request.Person2Id,
-                request.PartnerType,
-                request.FromDate,
-                request.ToDate,
-                cancellationToken);
-
+            var created = await _service.CreateAsync(request, cancellationToken);
             if (created is null) return BadRequest();
             return Ok(created);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdatePartnerRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<ResponsePartnerRelation>> Update(int id, [FromBody] RequestUpdatePartnerRelation request, CancellationToken cancellationToken)
         {
-            var updated = await _partnerService.UpdateAsync(
-                id,
-                request.PartnerType,
-                request.FromDate,
-                request.ToDate,
-                cancellationToken);
-
+            var updated = await _service.UpdateAsync(id, request, cancellationToken);
             if (updated is null) return NotFound();
             return Ok(updated);
         }
@@ -65,10 +41,8 @@ namespace Backend.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var deleted = await _partnerService.DeleteAsync(id, cancellationToken);
+            var deleted = await _service.DeleteAsync(id, cancellationToken);
             return deleted ? NoContent() : NotFound();
         }
     }
-
-
 }

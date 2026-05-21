@@ -1,5 +1,6 @@
 ﻿using Backend.Services.DTOs.FamilyTree;
 using Backend.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Controllers
@@ -23,6 +24,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> GetById(int id, CancellationToken cancellationToken)
         {
             var tree = await _familyTreeService.GetByIdAsync(id, cancellationToken);
@@ -31,6 +33,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Create([FromBody] RequestCreateFamilyTree request, CancellationToken cancellationToken)
         {
             var created = await _familyTreeService.CreateAsync(request, cancellationToken);
@@ -39,6 +42,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Update(int id, [FromBody] RequestUpdateFamilyTree request, CancellationToken cancellationToken)
         {
             var updated = await _familyTreeService.UpdateAsync(id, request, cancellationToken);
@@ -47,6 +51,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var deleted = await _familyTreeService.DeleteAsync(id, cancellationToken);

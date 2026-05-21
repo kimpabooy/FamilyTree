@@ -33,16 +33,19 @@ namespace Backend.Services.Services
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-                throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException(errors);
+            }
 
-            // TODO: fixa _jwtTokenService.GenerateToken(user);
-
-            var token = _jwtTokenService.GenerateRefreshToken();
-            //var token = _jwtTokenService.GenerateToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var (token, _) = _jwtTokenService.GenerateJwtToken(user, roles);
+            var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
             return new ResponseAuth
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 UserId = user.Id,
                 Email = user.Email!,
                 DisplayName = user.DisplayName
@@ -59,12 +62,14 @@ namespace Backend.Services.Services
             if (!result.Succeeded)
                 throw new UnauthorizedAccessException("Fel e-post eller lösenord.");
 
-            var token = _jwtTokenService.GenerateRefreshToken();
-            //var token = _jwtTokenService.GenerateToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var (token, _) = _jwtTokenService.GenerateJwtToken(user, roles);
+            var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
             return new ResponseAuth
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 UserId = user.Id,
                 Email = user.Email!,
                 DisplayName = user.DisplayName
@@ -78,6 +83,7 @@ namespace Backend.Services.Services
 
         public Task<ResponseAuth> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
+            // Implementeras när persistent refresh-token-lagring läggs till.
             throw new NotImplementedException();
         }
     }

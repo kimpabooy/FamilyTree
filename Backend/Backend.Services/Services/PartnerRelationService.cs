@@ -34,7 +34,7 @@ namespace Backend.Services.Services
             var created = _unitOfWork.PartnerRelationRepository.Add(relation);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Ladda om med navigation properties för att kunna mappa Partner-person
+            // Hämta om med navigation properties (Person1, Person2) laddade
             var withNav = await _unitOfWork.PartnerRelationRepository.GetByIdAsync(created.Id, cancellationToken);
             return withNav is null ? null : MapToResponse(withNav, dto.Person1Id);
         }
@@ -47,7 +47,7 @@ namespace Backend.Services.Services
             existing.PartnerType = dto.PartnerType;
             existing.FromDate = dto.FromDate;
             existing.ToDate = dto.ToDate;
-            existing.UpdatedDate = DateOnly.FromDateTime(DateTime.Now);
+            existing.UpdatedDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return MapToResponse(existing, existing.Person1Id);
@@ -63,9 +63,9 @@ namespace Backend.Services.Services
             return true;
         }
 
-        // Hjälpmetod för att mappa PartnerRelation till ResponsePartnerRelation.
-        // Eftersom en PartnerRelation har två personer (Person1 och Person2) och vi hämtar relationer utifrån en av personerna (partnerOfId), så måste vi avgöra vilken av de två personerna som är "den andre parten" i relationen.
-        // partnerOfId anger vems perspektiv vi mappar från — den andre parten blir Partner.
+        // Hjälpmetod för att mappa en PartnerRelation till en ResponsePartnerRelation, och avgöra vilken person som är "partner" baserat på partnerOfId
+        // partnerOfId används för att avgöra vilken av de två personerna i relationen som är "partnern" i svaret, så att vi alltid returnerar den andra personen som partnern.
+        // Mappar en PartnerRelation till ResponsePartnerRelation, och avgör vilken person som är "partner" baserat på partnerOfId
         private static ResponsePartnerRelation MapToResponse(PartnerRelation relation, int partnerOfId) => new()
         {
             Id = relation.Id,

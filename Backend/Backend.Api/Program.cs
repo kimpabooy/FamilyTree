@@ -53,7 +53,7 @@ namespace Backend.Api
             var jwtSettings = jwtSection.Get<JwtSettings>()
                 ?? throw new InvalidOperationException("Missing Jwt configuration");
 
-            Console.WriteLine($"Env Jwt__Key present: {Environment.GetEnvironmentVariable("Jwt__Key") != null}");
+            //Console.WriteLine($"Env Jwt__Key present: {Environment.GetEnvironmentVariable("Jwt__Key") != null}");
 
             builder.Services.AddAuthentication(options =>
             {

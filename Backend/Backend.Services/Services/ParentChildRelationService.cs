@@ -1,5 +1,6 @@
 ﻿using Backend.Core.Interface;
 using Backend.Core.Models;
+using Backend.Services.DTOs.Person;
 using Backend.Services.DTOs.Relations;
 using Backend.Services.Interface;
 
@@ -14,26 +15,20 @@ namespace Backend.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<ResponseParentChildRelation?> CreateAsync(RequestCreateParentChildRelation parentIdDto, RequestCreateParentChildRelation childIdDto, CancellationToken cancellationToken)
+        public async Task<ResponseParentChildRelation?> CreateAsync(RequestCreateParentChildRelation dto, CancellationToken cancellationToken = default)
         {
-            var exists = await _unitOfWork.ParentChildRelationRepository.ExistsAsync(parentIdDto.ParentId, childIdDto.ChildId, cancellationToken);
+            var exists = await _unitOfWork.ParentChildRelationRepository.ExistsAsync(dto.ParentId, dto.ChildId, cancellationToken);
             if (exists) return null;
 
             var relation = new ParentChildRelation
             {
-                ParentId = parentIdDto.ParentId,
-                ChildId = childIdDto.ChildId
+                ParentId = dto.ParentId,
+                ChildId = dto.ChildId
             };
 
             var created = _unitOfWork.ParentChildRelationRepository.Add(relation);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            return new ResponseParentChildRelation
-            {
-                Id = created.Id,
-                ParentId = created.ParentId,
-                ChildId = created.ChildId
-            };
+            return MapToResponse(created);
         }
 
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -46,24 +41,37 @@ namespace Backend.Services.Services
             return true;
         }
 
-        public async Task<IEnumerable<Person>> GetParentsAsync(int personId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ResponsePerson>> GetParentsAsync(int personId, CancellationToken cancellationToken = default)
         {
-            return await _unitOfWork.ParentChildRelationRepository.GetParentsAsync(personId, cancellationToken);
+            var persons = await _unitOfWork.ParentChildRelationRepository.GetParentsAsync(personId, cancellationToken);
+            return persons.Select(PersonService.MapToResponse);
         }
 
-        public async Task<IEnumerable<Person>> GetChildrenAsync(int personId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ResponsePerson>> GetChildrenAsync(int personId, CancellationToken cancellationToken = default)
         {
-            return await _unitOfWork.ParentChildRelationRepository.GetChildrenAsync(personId, cancellationToken);
+            var persons = await _unitOfWork.ParentChildRelationRepository.GetChildrenAsync(personId, cancellationToken);
+            return persons.Select(PersonService.MapToResponse);
         }
 
-        public async Task<IEnumerable<Person>> GetSiblingsAsync(int personId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ResponsePerson>> GetSiblingsAsync(int personId, CancellationToken cancellationToken = default)
         {
-            return await _unitOfWork.ParentChildRelationRepository.GetSiblingsAsync(personId, cancellationToken);
+            var persons = await _unitOfWork.ParentChildRelationRepository.GetSiblingsAsync(personId, cancellationToken);
+            return persons.Select(PersonService.MapToResponse);
         }
 
-        public async Task<IEnumerable<Person>> GetGrandparentsAsync(int personId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ResponsePerson>> GetGrandparentsAsync(int personId, CancellationToken cancellationToken = default)
         {
-            return await _unitOfWork.ParentChildRelationRepository.GetGrandparentsAsync(personId, cancellationToken);
+            var persons = await _unitOfWork.ParentChildRelationRepository.GetGrandparentsAsync(personId, cancellationToken);
+            return persons.Select(PersonService.MapToResponse);
         }
+
+        // Helper method to map ParentChildRelation to ResponseParentChildRelation
+        private static ResponseParentChildRelation MapToResponse(ParentChildRelation relation) => new()
+        {
+            Id = relation.Id,
+            ParentId = relation.ParentId,
+            ChildId = relation.ChildId,
+            CreatedDate = relation.CreatedDate
+        };
     }
 }

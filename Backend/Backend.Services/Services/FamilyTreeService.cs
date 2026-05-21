@@ -16,80 +16,41 @@ namespace Backend.Services.Services
 
         public async Task<IEnumerable<ResponseFamilyTree>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var familyTrees = await _unitOfWork.FamilyTreeRepository.GetAllAsync(cancellationToken);
-            var response = familyTrees.Select(ft => new ResponseFamilyTree
-            {
-                Id = ft.Id,
-                Name = ft.Name,
-                IsPublic = ft.IsPublic,
-                OwnerId = ft.OwnerId,
-                CreatedDate = ft.CreatedDate,
-                UpdatedDate = ft.UpdatedDate
-            });
-
-            return response;
+            var trees = await _unitOfWork.FamilyTreeRepository.GetAllAsync(cancellationToken);
+            return trees.Select(MapToResponse);
         }
 
         public async Task<ResponseFamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var familyTree = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
-            if (familyTree is null) return null;
-
-            return new ResponseFamilyTree
-            {
-                Id = familyTree.Id,
-                Name = familyTree.Name,
-                IsPublic = familyTree.IsPublic,
-                OwnerId = familyTree.OwnerId,
-                CreatedDate = familyTree.CreatedDate,
-                UpdatedDate = familyTree.UpdatedDate
-            };
+            var tree = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
+            return tree is null ? null : MapToResponse(tree);
         }
 
-        public async Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree requestDto, CancellationToken cancellationToken = default)
+        public async Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, CancellationToken cancellationToken = default)
         {
             var toCreate = new FamilyTree
             {
-                Name = requestDto.Name,
-                IsPublic = requestDto.IsPublic,
-                OwnerId = requestDto.OwnerId,
-                CreatedDate = DateOnly.FromDateTime(DateTime.Now)
+                Name = request.Name,
+                IsPublic = request.IsPublic,
+                OwnerId = request.OwnerId
             };
 
-            // Await the Add result (was missing)
-            var response = await _unitOfWork.FamilyTreeRepository.Add(toCreate);
+            var created = _unitOfWork.FamilyTreeRepository.Add(toCreate);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            return new ResponseFamilyTree
-            {
-                Id = response.Id,
-                Name = response.Name,
-                IsPublic = response.IsPublic,
-                OwnerId = response.OwnerId,
-                CreatedDate = response.CreatedDate,
-                UpdatedDate = response.UpdatedDate
-            };
+            return MapToResponse(created);
         }
 
-        public async Task<ResponseFamilyTree?> UpdateAsync(int id, RequestUpdateFamilyTree requestDto, CancellationToken cancellationToken = default)
+        public async Task<ResponseFamilyTree?> UpdateAsync(int id, RequestUpdateFamilyTree request, CancellationToken cancellationToken = default)
         {
             var existing = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return null;
 
-            existing.Name = requestDto.Name;
-            existing.IsPublic = requestDto.IsPublic;
+            existing.Name = request.Name;
+            existing.IsPublic = request.IsPublic;
             existing.UpdatedDate = DateOnly.FromDateTime(DateTime.Now);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return new ResponseFamilyTree
-            {
-                Id = existing.Id,
-                Name = existing.Name,
-                IsPublic = existing.IsPublic,
-                OwnerId = existing.OwnerId,
-                CreatedDate = existing.CreatedDate,
-                UpdatedDate = existing.UpdatedDate
-            };
+            return MapToResponse(existing);
         }
 
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -97,9 +58,20 @@ namespace Backend.Services.Services
             var existing = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return false;
 
-             await _unitOfWork.FamilyTreeRepository.DeleteAsync(existing.Id, cancellationToken);
-             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _unitOfWork.FamilyTreeRepository.Remove(existing);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        // En hjälpfunktion för att mappa FamilyTree-modellen till ResponseFamilyTree DTO:n
+        private static ResponseFamilyTree MapToResponse(FamilyTree tree) => new()
+        {
+            Id = tree.Id,
+            Name = tree.Name,
+            IsPublic = tree.IsPublic,
+            OwnerId = tree.OwnerId,
+            CreatedDate = tree.CreatedDate,
+            UpdatedDate = tree.UpdatedDate
+        };
     }
 }

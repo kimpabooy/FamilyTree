@@ -7,8 +7,8 @@ namespace Backend.Services.Interface
     {
         Task<IEnumerable<ResponseFamilyTree>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<ResponseFamilyTree?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
-        Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree requestDto, CancellationToken cancellationToken = default);
-        Task<ResponseFamilyTree?> UpdateAsync(int id, RequestUpdateFamilyTree requestDto, CancellationToken cancellationToken = default);
+        Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, CancellationToken cancellationToken = default);
+        Task<ResponseFamilyTree?> UpdateAsync(int id, RequestUpdateFamilyTree request, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

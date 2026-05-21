@@ -1,42 +1,38 @@
-using Backend.Core.Interface;
-using Backend.Core.Models;
-using Backend.Infrastructure.Data;
-using Backend.Infrastructure.Repositories;
 using Backend.Services.Auth;
 using Backend.Services.DependencyInjection;
-using Backend.Services.Interface;
-using Backend.Services.Services;
+using Backend.Core.Models;
+using Backend.Infrastructure.Data;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Backend.WebApi
+namespace Backend.Api
 {
     public class Program
     {
         public static async Task Main(string[] args)
         {
-            // Läser in miljövariabler från .env-filen i projektets rotkatalog
             Env.Load("../.env");
+
             var builder = WebApplication.CreateBuilder(args);
 
             Console.WriteLine($"Configuration SeedData = '{builder.Configuration["SeedData"]}'");
 
-            // Database connection.
+            // Database connection
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Backend.Infrastructure")));
 
-            // Register Identity with roles so RoleManager is available
+            // Identity
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
-                // Password settings - adjust as needed
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
@@ -51,11 +47,12 @@ namespace Backend.WebApi
             builder.Services.AddOptions<JwtSettings>()
                    .Bind(jwtSection)
                    .ValidateDataAnnotations()
-                   .Validate(s => !string.IsNullOrWhiteSpace(s.Key) && s.Key.Length >= 32, 
+                   .Validate(s => !string.IsNullOrWhiteSpace(s.Key) && s.Key.Length >= 32,
                    "Jwt:Key must be set and at least 32 chars.");
-            var jwtSettings = jwtSection.Get<JwtSettings>() ?? throw new InvalidOperationException("Missing Jwt configuration");
 
-            // Debugging output to verify JWT configuration presence
+            var jwtSettings = jwtSection.Get<JwtSettings>()
+                ?? throw new InvalidOperationException("Missing Jwt configuration");
+
             Console.WriteLine($"Env Jwt__Key present: {Environment.GetEnvironmentVariable("Jwt__Key") != null}");
 
             builder.Services.AddAuthentication(options =>
@@ -80,53 +77,81 @@ namespace Backend.WebApi
                 };
             });
 
-            // UnitOfWork
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            // Register JWT/token services
-            builder.Services.AddScoped<JwtTokenService>();
-            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-            // Service layer
+            // Alla repositories, services och JwtTokenService
             builder.Services.AddServiceLayer();
 
-            // Controllers and API-documentation
+            // Controllers
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            }); 
+            });
+
+            // OpenAPI med Bearer-säkerhetsdefinition för Scalar
+            builder.Services.AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer((document, context, ct) =>
+                {
+                    document.Components ??= new();
+                    document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
+                    {
+                        ["Bearer"] = new OpenApiSecurityScheme
+                        {
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "bearer",
+                            BearerFormat = "JWT",
+                            Description = "Klistra in din JWT-token här. Den gäller för alla låsta endpoints."
+                        }
+                    };
+
+                    document.SecurityRequirements =
+                    [
+                        new OpenApiSecurityRequirement
+                        {
+                            [new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id   = "Bearer"
+                                }
+                            }] = []
+                        }
+                    ];
+
+                    return Task.CompletedTask;
+                });
+            });
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddOpenApi();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi(); // Exposes standard OpenAPI document
-                app.MapScalarApiReference(); // Renders the Scalar UI
+                app.MapOpenApi();
+                app.MapScalarApiReference(options =>
+                {
+                    options.AddPreferredSecuritySchemes("Bearer")
+                           .AddHttpAuthentication("Bearer", bearer =>
+                           {
+                               bearer.Token = string.Empty;
+                           });
+                });
             }
 
             app.UseHttpsRedirection();
-
-            // Authentication & Authorization
             app.UseAuthentication();
             app.UseAuthorization();
-
-            // API endpoints
             app.MapControllers();
 
-            // Seed the database with initial data if configured to do so.
+            // Seed
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-
                 try
                 {
                     var config = services.GetRequiredService<IConfiguration>();
                     var shouldSeed = config.GetValue<bool>("SeedData");
-
                     if (shouldSeed)
                     {
                         await IdentitySeed.InitializeAsync(services);

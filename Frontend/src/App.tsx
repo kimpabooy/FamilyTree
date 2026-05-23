@@ -1,14 +1,15 @@
 import './App.css'
 import Footer from './components/Footer'
 import Header from './components/Header'
+import SidePanel from './components/sidepanel'
 
 function App() {
   return (
     <>
-      <div>
+      <div className="app">
         <Header />
-        <main>
-          <p>Welcome to the Family Tree application!</p>
+        <SidePanel />
+        <main className="main-content">
         </main>
         <Footer />
       </div>

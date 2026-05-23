@@ -2,47 +2,56 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    text-decoration: none;
 }
 
 :root {
-    /* Standard colors */
     --color-light-beige: #fdf6f0;
     --color-beige: #f5ede4;
     --color-heavy-beige: #e8d5c4;
     --color-dark-beige: #c9b29b;
-
-    /* Background colors */
     --color-bg-light-beige: #fdf6f0;
     --color-bg-beige: #f5ede4;
     --color-bg-heavy-beige: #e8d5c4;
     --color-bg-dark-beige: #c9b29b;
-
-    /* Text colors */
     --color-accent: #7a3b2e;
     --color-text: #2c1a12;
     --color-text-heavy-beige: #8a6a5a;
-    
-    /* Misc colors */
     --color-border: #e8d5c4;
 }
 
+/* ─── Dark mode ───────────────────────────────────── */
+.app.dark {
+    --color-bg-light-beige: #2c1f18;   
+    --color-bg-beige: #351f17;         
+    --color-beige: #3e2820;           
+    --color-border: #5a3828;           
+    --color-text: #f5ece5;             
+    --color-text-heavy-beige: #c4a090; 
+    --color-accent: #e8845c;
+
+}
+
 body {
-    background-color: var(--color-bg-light-beige);
-    font-family: 'Segoe UI', sans-serif;
     color: var(--color-text);
 }
 
 .app {
     display: grid;
-    grid-template-columns: 15vw 1fr;
+    grid-template-columns: minmax(8vw, 140px) 1fr;
     grid-template-rows: auto 1fr auto;
-    height: 100vh; /* Låser hela layouten till skärmhöjden – ingen scroll på sidan */
+    height: 100vh;
 }
 
+
+/* ─── Header ─────────────────────────────────────── */
 .header {
     grid-column: 1 / -1;
     grid-row: 1;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     background-color: var(--color-beige);
     padding: 1rem 2rem;
     border-bottom: 1px solid var(--color-border);
@@ -53,23 +62,63 @@ body {
         color: var(--color-accent);
         letter-spacing: 0.05em;
     }
+    
+    & img {
+        scale: 1.2;
+        margin-right: 0.5rem;
+    }
+
+        & .dark-mode-toggle {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem 0.5rem;
+            transition: background 0.2s;
+
+            &:hover {
+                scale: 1.05;
+            }
+        }
 }
 
+/* Hamburgerknapp – dold på desktop */
+.menu-toggle {
+    display: none;
+    position: absolute;
+    left: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0.25rem;
+
+    & span {
+        display: block;
+        width: 24px;
+        height: 2px;
+        background-color: var(--color-accent);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+}
+
+/* ─── Sidopanel ───────────────────────────────────── */
 .side-panel {
     grid-column: 1;
     grid-row: 2;
     background-color: var(--color-beige);
-    padding: 1.5rem 1rem;
+    padding: 1rem 1rem;
     border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    overflow-y: auto;
 
     & img {
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
         align-self: center;
     }
 
@@ -102,13 +151,35 @@ body {
     }
 }
 
+/* ─── Main ────────────────────────────────────────── */
 .main-content {
     grid-column: 2;
     grid-row: 2;
     background-color: var(--color-bg-light-beige);
-    overflow: hidden; /* Scrollning sker bara inne i React Flow's canvas */
+    overflow: hidden;
 }
 
+/* ─── Sidor ───────────────────────────────────────── */
+.home-page,
+.about-page,
+.contact-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+
+    & h1 {
+        font-size: 1.5rem;
+        color: var(--color-accent);
+    }
+
+    & p {
+        font-size: 1rem;
+        color: var(--color-text);
+    }
+}
+
+/* ─── Footer ──────────────────────────────────────── */
 .footer {
     grid-column: 1 / -1;
     grid-row: 3;
@@ -116,7 +187,6 @@ body {
     justify-content: space-evenly;
     align-items: flex-start;
     flex-wrap: wrap;
-    /* gap: 1.5rem; */
     background-color: var(--color-beige);
     border-top: 1px solid var(--color-border);
     padding: 1rem;
@@ -141,17 +211,72 @@ body {
         line-height: 1.6;
     }
 
-    & a:hover {
-        color: var(--color-accent);
-    }
+    & a:hover { color: var(--color-accent); }
 
     & .copyright {
         width: 100%;
         text-align: center;
         font-size: 0.8rem;
         color: var(--color-text-heavy-beige);
-        border-top: 1px solid var(--color-border);
         padding-top: 1rem;
         margin-top: 0.5rem;
+    }
+}
+
+/* ─── Mobil (≤ 768px || ≤ 1180px) ─────────────────────────────── */
+/* @media (max-width: 1180px) { */
+@media (max-width: 768px) {
+
+    .app {
+        grid-template-columns: 1fr;   /* En kolumn – ingen sidopanel i flödet */
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .side-panel {
+        /* Ligger utanför grid-flödet och glider in från vänster */
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 220px;
+        z-index: 100;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 16px rgba(0,0,0,0.12);
+    }
+
+    /* Klassen läggs på/tas bort med JS i Header-komponenten */
+    .side-panel.open {
+        transform: translateX(0);
+    }
+
+    /* Mörkt overlay bakom panelen när den är öppen */
+    .side-panel-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 99;
+    }
+
+    .side-panel-overlay.open {
+        display: block;
+    }
+
+    .main-content {
+        grid-column: 1;
+    }
+
+    .footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        & div {
+            text-align: center;
+        }
     }
 }

@@ -36,7 +36,7 @@ body {
     display: grid;
     grid-template-columns: 15vw 1fr;
     grid-template-rows: auto 1fr auto;
-    min-height: 100vh;
+    height: 100vh; /* Låser hela layouten till skärmhöjden – ingen scroll på sidan */
 }
 
 .header {
@@ -105,8 +105,8 @@ body {
 .main-content {
     grid-column: 2;
     grid-row: 2;
-    padding: 1rem;
     background-color: var(--color-bg-light-beige);
+    overflow: hidden; /* Scrollning sker bara inne i React Flow's canvas */
 }
 
 .footer {
@@ -116,13 +116,14 @@ body {
     justify-content: space-evenly;
     align-items: flex-start;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    /* gap: 1.5rem; */
     background-color: var(--color-beige);
     border-top: 1px solid var(--color-border);
     padding: 1rem;
 
     & div {
         max-width: 200px;
+        align-self: center;
         text-align: left;
 
         & h2 {

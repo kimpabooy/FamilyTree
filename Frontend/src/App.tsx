@@ -1,22 +1,37 @@
 import './App.css'
-import BasicFlow from './components/Flow/BasicFlow'
-import Footer from './components/Footer'
-import Header from './components/Header'
-import SidePanel from './components/sidepanel'
+import Footer from './components/layout/Footer.tsx'
+import Header from './components/layout/Header.tsx'
+import SidePanel from './components/layout/sidepanel.tsx'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home.tsx'
+import About from './pages/About.tsx'
+import Contact from './pages/Contact.tsx.tsx'
+import Familytree from './pages/Familytree.tsx'
+import { useState } from 'react'
 
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
   return (
-    <>
-      <div className="app">
-        <Header />
-        <SidePanel />
-        <main className="main-content">
-          <BasicFlow />
-        </main>
-        <Footer />
-      </div>
-    </>
-  )
+    <div className={`app ${darkMode ? 'dark' : ''}`}>
+      <Header
+        onMenuToggle={() => setMenuOpen(prev => !prev)}
+        onDarkModeToggle={() => setDarkMode(prev => !prev)}
+        darkMode={darkMode}
+      />
+      <SidePanel isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/familytree" element={<Familytree />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 export default App

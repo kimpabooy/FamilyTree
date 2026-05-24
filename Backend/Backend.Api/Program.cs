@@ -148,7 +148,7 @@ namespace Backend.Api
                 });
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection(); // utkommenterad för enklare lokal utveckling utan att behöva hantera certifikat
             app.UseCors("DevPolicy");
             app.UseAuthentication();
             app.UseAuthorization();

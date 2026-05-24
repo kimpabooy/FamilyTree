@@ -53,8 +53,6 @@ namespace Backend.Api
             var jwtSettings = jwtSection.Get<JwtSettings>()
                 ?? throw new InvalidOperationException("Missing Jwt configuration");
 
-            //Console.WriteLine($"Env Jwt__Key present: {Environment.GetEnvironmentVariable("Jwt__Key") != null}");
-
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,6 +82,17 @@ namespace Backend.Api
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
+
+            // CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DevPolicy", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
             });
 
             // OpenAPI med Bearer-säkerhetsdefinition för Scalar
@@ -139,7 +148,8 @@ namespace Backend.Api
                 });
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection(); // utkommenterad för enklare lokal utveckling utan att behöva hantera certifikat
+            app.UseCors("DevPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();

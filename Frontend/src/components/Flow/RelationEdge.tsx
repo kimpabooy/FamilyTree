@@ -6,7 +6,7 @@ import {
   type EdgeProps,
 } from "@xyflow/react";
 
-export default function ParentChildEdge(props: EdgeProps) {
+export default function RelationEdge(props: EdgeProps) {
   const { deleteElements } = useReactFlow();
   const [edgePath, labelX, labelY] = getBezierPath(props);
 

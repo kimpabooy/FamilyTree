@@ -6,6 +6,7 @@ namespace Backend.Services.Interface
 {
     public interface IParentChildRelationService
     {
+        Task<IEnumerable<ResponseParentChildRelation>> GetByFamilyTreeIdAsync(int familyTreeId, CancellationToken cancellationToken = default);
         Task<ResponseParentChildRelation?> CreateAsync(RequestCreateParentChildRelation dto, CancellationToken cancellationToken = default);
         Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
         Task<IEnumerable<ResponsePerson>> GetParentsAsync(int personId, CancellationToken cancellationToken = default);

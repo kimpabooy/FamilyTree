@@ -14,6 +14,15 @@ namespace Backend.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<ParentChildRelation>> GetByFamilyTreeIdAsync(int familyTreeId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ParentChildRelations
+                .Where(pc => pc.Parent.FamilyTreeId == familyTreeId || pc.Child.FamilyTreeId == familyTreeId)
+                .Include(pc => pc.Parent)
+                .Include(pc => pc.Child)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<ParentChildRelation?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.ParentChildRelations

@@ -1,0 +1,41 @@
+interface ConnectionTypeDialogProps {
+  onParentChild: () => void;
+  onPartner: () => void;
+  //   onSibling: () => void;
+  onClose: () => void;
+}
+
+/**
+ * ConnectionTypeDialog — visas när användaren drar en linje mellan två noder.
+ * Låter användaren välja om det är en förälder-barn- eller partnerrelation.
+ */
+export default function ConnectionTypeDialog({
+  onParentChild,
+  onPartner,
+  onClose,
+}: ConnectionTypeDialogProps) {
+  return (
+    <div className="dialog-overlay">
+      <div className="dialog-card">
+        <h3 className="dialog-card__heading">Vilken typ av relation?</h3>
+        <p className="dialog-card__text">
+          Välj hur dessa två personer är kopplade till varandra.
+        </p>
+        <div className="dialog-card__actions">
+          <button
+            className="flow-btn flow-btn--primary"
+            onClick={onParentChild}
+          >
+            👨‍👧 Förälder → Barn
+          </button>
+          <button className="flow-btn flow-btn--primary" onClick={onPartner}>
+            💑 Partner
+          </button>
+          <button className="flow-btn flow-btn--ghost" onClick={onClose}>
+            Avbryt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

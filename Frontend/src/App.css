@@ -22,14 +22,13 @@
 
 /* ─── Dark mode ───────────────────────────────────── */
 .app.dark {
-    --color-bg-light-beige: #2c1f18;   
-    --color-bg-beige: #351f17;         
-    --color-beige: #3e2820;           
-    --color-border: #5a3828;           
-    --color-text: #f5ece5;             
-    --color-text-heavy-beige: #c4a090; 
+    --color-bg-light-beige: #2c1f18;
+    --color-bg-beige: #351f17;
+    --color-beige: #3e2820;
+    --color-border: #5a3828;
+    --color-text: #f5ece5;
+    --color-text-heavy-beige: #c4a090;
     --color-accent: #e8845c;
-
 }
 
 body {
@@ -42,7 +41,6 @@ body {
     grid-template-rows: auto 1fr auto;
     height: 100vh;
 }
-
 
 /* ─── Header ─────────────────────────────────────── */
 .header {
@@ -62,26 +60,26 @@ body {
         color: var(--color-accent);
         letter-spacing: 0.05em;
     }
-    
+
     & img {
         scale: 1.2;
         margin-right: 0.5rem;
     }
 
-        & .dark-mode-toggle {
-            position: absolute;
-            right: 1rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 0.25rem 0.5rem;
-            transition: background 0.2s;
+    & .dark-mode-toggle {
+        position: absolute;
+        right: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0.25rem 0.5rem;
+        transition: background 0.2s;
 
-            &:hover {
-                scale: 1.05;
-            }
+        &:hover {
+            scale: 1.05;
         }
+    }
 }
 
 /* Hamburgerknapp – dold på desktop */
@@ -157,6 +155,180 @@ body {
     grid-row: 2;
     background-color: var(--color-bg-light-beige);
     overflow: hidden;
+    height: 100%;
+}
+
+/* ─── Familjeträd-sida ────────────────────────────── */
+.familytree-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.familytree-page__toolbar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.familytree-page__canvas {
+    flex: 1;
+    min-height: 0; /* Krävs i flexbox för att height: 100% ska fungera i barn */
+}
+
+/* ─── Skapa familjeträd – wizard ──────────────────── */
+.create-flow-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 24px;
+}
+
+.create-flow-card {
+    background: var(--color-light-beige);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 40px 48px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.create-flow-card__heading {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.create-flow-card__subtext {
+    margin: 0 0 16px;
+    color: var(--color-text-heavy-beige);
+    font-size: 14px;
+}
+
+.create-flow-card__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.create-flow-workspace {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.create-flow-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--color-beige);
+    border-right: 1px solid var(--color-border);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+}
+
+.create-flow-sidebar__heading {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.create-flow-sidebar__label {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heavy-beige);
+}
+
+.create-flow-sidebar__hint {
+    font-size: 12px;
+    color: var(--color-text-heavy-beige);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.create-flow-sidebar__error {
+    color: #dc2626;
+    font-size: 13px;
+    margin: 0 0 8px;
+}
+
+.create-flow-sidebar__divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 16px 0;
+}
+
+.create-flow-canvas {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+}
+
+/* ─── Formulär-inputs (delade) ────────────────────── */
+.flow-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: var(--color-light-beige);
+    color: var(--color-text);
+}
+
+.flow-input + .flow-input {
+    margin-top: 6px;
+}
+
+/* ─── Flow-knappar ────────────────────────────────── */
+.flow-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.flow-btn--primary {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.flow-btn--success {
+    background: #16a34a;
+    color: #fff;
+}
+
+.flow-btn--disabled {
+    background: var(--color-heavy-beige);
+    color: var(--color-text-heavy-beige);
+    cursor: not-allowed;
+}
+
+.flow-btn--ghost {
+    background: transparent;
+    color: var(--color-text-heavy-beige);
+    border: 1px solid var(--color-border);
+}
+
+.flow-btn + .flow-btn {
+    margin-top: 8px;
 }
 
 /* ─── Sidor ───────────────────────────────────────── */
@@ -176,6 +348,51 @@ body {
     & p {
         font-size: 1rem;
         color: var(--color-text);
+    }
+}
+
+/* ─── Knappar ─────────────────────────────────────── */
+.btn.btn-primary {
+    background: var(--color-accent);
+    color: var(--color-light-beige);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--color-dark-beige);
+        color: black;
+    }
+}
+
+.btn.btn-secondary {
+    background: var(--color-border);
+    color: var(--color-text);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--color-dark-beige);
+        color: var(--color-light-beige);
+    }
+}
+
+.btn.btn-danger {
+    background: #e74c3c;
+    color: var(--color-light-beige);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #c0392b;
     }
 }
 
@@ -204,14 +421,17 @@ body {
         }
     }
 
-    & p, & a {
+    & p,
+    & a {
         font-size: 0.85rem;
         color: var(--color-text-heavy-beige);
         text-decoration: none;
         line-height: 1.6;
     }
 
-    & a:hover { color: var(--color-accent); }
+    & a:hover {
+        color: var(--color-accent);
+    }
 
     & .copyright {
         width: 100%;
@@ -223,12 +443,10 @@ body {
     }
 }
 
-/* ─── Mobil (≤ 768px || ≤ 1180px) ─────────────────────────────── */
-/* @media (max-width: 1180px) { */
+/* ─── Mobil (≤ 768px) ─────────────────────────────── */
 @media (max-width: 768px) {
-
     .app {
-        grid-template-columns: 1fr;   /* En kolumn – ingen sidopanel i flödet */
+        grid-template-columns: 1fr;
         grid-template-rows: auto 1fr auto;
     }
 
@@ -237,7 +455,6 @@ body {
     }
 
     .side-panel {
-        /* Ligger utanför grid-flödet och glider in från vänster */
         position: fixed;
         top: 0;
         left: 0;
@@ -245,20 +462,18 @@ body {
         width: 220px;
         z-index: 100;
         transform: translateX(-100%);
-        box-shadow: 4px 0 16px rgba(0,0,0,0.12);
+        box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
     }
 
-    /* Klassen läggs på/tas bort med JS i Header-komponenten */
     .side-panel.open {
         transform: translateX(0);
     }
 
-    /* Mörkt overlay bakom panelen när den är öppen */
     .side-panel-overlay {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0, 0, 0, 0.3);
         z-index: 99;
     }
 
@@ -279,4 +494,48 @@ body {
             text-align: center;
         }
     }
+}
+
+/* ─── Relationstyp-dialog ─────────────────────────── */
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.dialog-card {
+    background: var(--color-light-beige);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 32px 40px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dialog-card__heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.dialog-card__text {
+    color: var(--color-text-heavy-beige);
+    font-size: 14px;
+    margin: 0;
+}
+
+.dialog-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
 }

@@ -2,34 +2,40 @@ import { useCallback, useEffect, useState } from "react";
 import { type Node, type Edge } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
 import { getPersonsByTree } from "../services/PersonService";
-import type { Person, ParentChildRelation } from "../types/Models";
+import type {
+  Person,
+  ParentChildRelation,
+  PartnerRelation,
+} from "../types/Models";
 import type { CreateParentChildRequest } from "../types/Requests";
 import {
   getParentChildRelationsByTree,
+  getPartnerRelations,
   createParentChildRelation,
   deleteParentChildRelation,
+  deletePartnerRelation,
 } from "../services/RelationService";
+
+/*
+  useFamilyTreeFlow — hämtar ett befintligt träd från backend och bygger
+  React Flow-noder och kanter med Dagre-layout.
+  Exponerar addParentChildEdge och removeEdge för FamilyFlow att använda.
+*/
 
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 60;
 
-// Dagre-layout: beräknar x/y automatiskt baserat på förälder-barn-relationer
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const graph = new dagre.graphlib.Graph();
-  graph.setDefaultEdgeLabel(() => ({})); // Default edge label krävs av dagre, även om vi inte använder den
-  graph.setGraph({
-    direction: "TB", // Top -> Bottom
-    nodesep: 10, // horisontellt avstånd mellan noder på samma nivå
-    ranksep: 120, // vertikalt avstånd mellan nivåer
-  });
+  graph.setDefaultEdgeLabel(() => ({}));
+  graph.setGraph({ direction: "TB", nodesep: 10, ranksep: 120 });
 
-  nodes.forEach((node) => {
-    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
-  });
-
-  edges.forEach((edge) => {
-    graph.setEdge(edge.source, edge.target);
-  });
+  nodes.forEach((node) =>
+    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }),
+  );
+  edges
+    .filter((edge) => edge.type === "parent-child")
+    .forEach((edge) => graph.setEdge(edge.source, edge.target));
 
   dagre.layout(graph);
 
@@ -38,8 +44,8 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
     return {
       ...node,
       position: {
-        x: x - NODE_WIDTH,
-        y: y - NODE_HEIGHT,
+        x: x - NODE_WIDTH / 2,
+        y: y - NODE_HEIGHT / 2,
       },
     };
   });
@@ -48,7 +54,7 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
 function buildNodes(persons: Person[]): Node[] {
   return persons.map((person) => ({
     id: String(person.id),
-    position: { x: 0, y: 0 }, // Dagre skriver över dessa
+    position: { x: 0, y: 0 },
     data: {
       label: `${person.firstName} ${person.lastName}`,
       person,
@@ -80,6 +86,40 @@ function buildEdges(relations: ParentChildRelation[]): Edge[] {
   }));
 }
 
+function buildPartnerEdges(
+  relations: { sourceId: number; relation: PartnerRelation }[],
+): Edge[] {
+  return relations.map(({ sourceId, relation }) => ({
+    id: `partner-${relation.id}`,
+    source: String(sourceId),
+    target: String(relation.partner.id),
+    type: "partner",
+    animated: false,
+    style: { stroke: "#e879a0", strokeDasharray: "6 3" },
+    label: "Partner",
+  }));
+}
+
+async function buildPartnerRelationSeeds(
+  persons: Person[],
+): Promise<{ sourceId: number; relation: PartnerRelation }[]> {
+  const seenRelationIds = new Set<number>();
+  const seeds: { sourceId: number; relation: PartnerRelation }[] = [];
+
+  await Promise.all(
+    persons.map(async (person) => {
+      const relations = await getPartnerRelations(person.id);
+      relations.forEach((relation) => {
+        if (seenRelationIds.has(relation.id)) return;
+        seenRelationIds.add(relation.id);
+        seeds.push({ sourceId: person.id, relation });
+      });
+    }),
+  );
+
+  return seeds;
+}
+
 export function useFamilyTreeFlow(familyTreeId: number) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -94,9 +134,13 @@ export function useFamilyTreeFlow(familyTreeId: number) {
         getPersonsByTree(familyTreeId),
         getParentChildRelationsByTree(familyTreeId),
       ]);
+      const partnerRelationSeeds = await buildPartnerRelationSeeds(persons);
 
       const rawNodes = buildNodes(persons);
-      const rawEdges = buildEdges(relations);
+      const rawEdges = [
+        ...buildEdges(relations),
+        ...buildPartnerEdges(partnerRelationSeeds),
+      ];
       const laidOutNodes = applyDagreLayout(rawNodes, rawEdges);
 
       setNodes(laidOutNodes);
@@ -118,16 +162,16 @@ export function useFamilyTreeFlow(familyTreeId: number) {
   ): Promise<void> {
     const request: CreateParentChildRequest = { parentId, childId };
     const created = await createParentChildRelation(request);
+
     const newEdge: Edge = {
       id: `pc-${created.id}`,
       source: String(parentId),
       target: String(childId),
       type: "parent-child",
       animated: false,
-      style: { stroke: "#6b806d" },
+      style: { stroke: "#6b7280" },
     };
 
-    // Kör om layout med den nya kanten
     setEdges((prevEdges) => {
       const updatedEdges = [...prevEdges, newEdge];
       setNodes((prevNodes) => applyDagreLayout(prevNodes, updatedEdges));
@@ -136,8 +180,16 @@ export function useFamilyTreeFlow(familyTreeId: number) {
   }
 
   async function removeEdge(edgeId: string): Promise<void> {
-    const dbId = Number(edgeId.replace("pc-", ""));
-    await deleteParentChildRelation(dbId);
+    if (edgeId.startsWith("pc-")) {
+      const dbId = Number(edgeId.replace("pc-", ""));
+      await deleteParentChildRelation(dbId);
+    } else if (edgeId.startsWith("partner-")) {
+      const dbId = Number(edgeId.replace("partner-", ""));
+      await deletePartnerRelation(dbId);
+    } else {
+      throw new Error(`Okänd edge-typ: ${edgeId}`);
+    }
+
     setEdges((prevEdges) => {
       const updatedEdges = prevEdges.filter((e) => e.id !== edgeId);
       setNodes((prevNodes) => applyDagreLayout(prevNodes, updatedEdges));

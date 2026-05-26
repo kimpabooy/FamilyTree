@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { apiFetch } from "../services/api";
+import { apiFetch } from "../services/Api";
 
 export default function TestApiEndpoint() {
   const [data, setData] = useState<unknown | null>(null);

@@ -4,6 +4,7 @@ namespace Backend.Core.Interface
 {
     public interface IParentChildRelationRepository
     {
+        Task<IEnumerable<ParentChildRelation>> GetByFamilyTreeIdAsync(int familyTreeId, CancellationToken cancellationToken = default);
         Task<ParentChildRelation?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<bool> ExistsAsync(int parentId, int childId, CancellationToken cancellationToken = default);
         Task<IEnumerable<Person>> GetParentsAsync(int personId, CancellationToken cancellationToken = default);

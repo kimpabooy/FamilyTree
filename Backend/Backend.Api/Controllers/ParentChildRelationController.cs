@@ -15,6 +15,13 @@ namespace Backend.Api.Controllers
             _service = service;
         }
 
+        [HttpGet("tree/{familyTreeId}")]
+        public async Task<ActionResult<IEnumerable<ResponseParentChildRelation>>> GetByFamilyTree(int familyTreeId, CancellationToken cancellationToken)
+        {
+            var relations = await _service.GetByFamilyTreeIdAsync(familyTreeId, cancellationToken);
+            return Ok(relations);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ResponseParentChildRelation>> Create([FromBody] RequestCreateParentChildRelation request, CancellationToken cancellationToken)
         {

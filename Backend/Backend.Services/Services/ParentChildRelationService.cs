@@ -15,6 +15,11 @@ namespace Backend.Services.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<IEnumerable<ResponseParentChildRelation>> GetByFamilyTreeIdAsync(int familyTreeId, CancellationToken cancellationToken = default)
+        {
+            var relations = await _unitOfWork.ParentChildRelationRepository.GetByFamilyTreeIdAsync(familyTreeId, cancellationToken);
+            return relations.Select(MapToResponse);
+        }
         public async Task<ResponseParentChildRelation?> CreateAsync(RequestCreateParentChildRelation dto, CancellationToken cancellationToken = default)
         {
             var exists = await _unitOfWork.ParentChildRelationRepository.ExistsAsync(dto.ParentId, dto.ChildId, cancellationToken);

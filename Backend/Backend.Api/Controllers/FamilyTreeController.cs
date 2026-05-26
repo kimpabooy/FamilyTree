@@ -24,7 +24,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> GetById(int id, CancellationToken cancellationToken)
         {
             var tree = await _familyTreeService.GetByIdAsync(id, cancellationToken);
@@ -33,7 +33,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Create([FromBody] RequestCreateFamilyTree request, CancellationToken cancellationToken)
         {
             var created = await _familyTreeService.CreateAsync(request, cancellationToken);
@@ -42,7 +42,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Update(int id, [FromBody] RequestUpdateFamilyTree request, CancellationToken cancellationToken)
         {
             var updated = await _familyTreeService.UpdateAsync(id, request, cancellationToken);
@@ -51,7 +51,7 @@ namespace Backend.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var deleted = await _familyTreeService.DeleteAsync(id, cancellationToken);

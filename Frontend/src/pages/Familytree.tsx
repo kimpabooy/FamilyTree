@@ -17,6 +17,16 @@ export default function FamilyTreePage() {
           variant="primary"
           onClick={() => navigate("/familytree/new")}
         />
+        <Button
+          label="Uppdatera trädet"
+          variant="secondary"
+          onClick={() => navigate(`/familytree/${FAMILY_TREE_ID}/update`)}
+        />
+        <Button
+          label="Ta bort trädet"
+          variant="danger"
+          onClick={() => navigate("/")}
+        />
       </div>
       <div className="familytree-page-canvas">
         <FamilyFlow familyTreeId={FAMILY_TREE_ID} />

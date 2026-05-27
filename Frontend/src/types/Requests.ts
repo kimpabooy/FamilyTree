@@ -11,6 +11,10 @@ export interface UpdateFamilyTreeRequest {
   isPublic: boolean;
 }
 
+export interface DeleteFamilyTreeRequest {
+  id: number;
+}
+
 export interface CreatePersonRequest {
   firstName: string;
   lastName: string;

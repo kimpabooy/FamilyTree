@@ -99,12 +99,18 @@ body {
     color: var(--color-text);
 }
 
+html,
+body,
+#root {
+    min-height: 100%;
+}
+
 /* ─── App-layout ──────────────────────────────────── */
 .app {
     display: grid;
     grid-template-columns: minmax(var(--sidebar-min), var(--sidebar-width)) 1fr;
     grid-template-rows: auto 1fr auto;
-    height: 100vh;
+    min-height: 100dvh;
 }
 
 /* ─── Header ─────────────────────────────────────── */
@@ -249,15 +255,15 @@ body {
     grid-column: 2;
     grid-row: 2;
     background-color: var(--bg-page);
-    overflow: hidden;
-    height: 100%;
+    overflow-y: auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ─── Generella sidor ─────────────────────────────── */
 /*
   Bakgrundsbilden sätts på sidan med en beige overlay via CSS gradient.
   Tekniken: background-image med två lager — overlay-färgen överst, bilden underst.
-  Ingen ::before behövs, inga z-index-problem, texten syns direkt.
 */
 .home-page,
 .about-page,
@@ -267,10 +273,11 @@ body {
     flex-direction: column;
     gap: 1.5rem;
     padding: 2rem;
-    /* Fyll hela main-content vertikalt */
     min-height: 100%;
-
-    background-image:
+    align-content: start;
+    /* margin-right: 8rem; */
+    /* Tonar ner bakgrundsbilden */
+    background-image: 
         linear-gradient(
             rgba(253, 246, 240, var(--bg-overlay-opacity)),
             rgba(253, 246, 240, var(--bg-overlay-opacity))
@@ -290,6 +297,66 @@ body {
         color: var(--color-text);
     }
 }
+
+/* ─── Home ──────────────────────── */
+.home-hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: var(--space-8) var(--space-4);
+
+    & h1 {
+        font-size: var(--font-size-3xl);
+        color: var(--color-accent);
+        /* display: flex; */
+        align-items: center;
+        gap: var(--space-2);
+    }
+    & p {
+        max-width: 600px;
+        line-height: 1.6;
+        text-align: flex-start;
+    }
+}
+
+.home-features-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-6);
+    padding: var(--space-8) var(--space-4);
+
+    & h2 {
+        font-size: var(--font-size-xl);
+        color: var(--color-accent);
+    }
+
+    & .home-features-container {
+        display: flex;
+        gap: var(--space-6);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    & .home-feature {
+        background: var(--bg-elevated);
+        border: var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        max-width: 300px;
+        flex: 1;
+
+        & h3 {
+            font-size: var(--font-size-lg);
+            color: var(--color-accent);
+            margin-bottom: var(--space-2);
+        }
+    }
+}
+
 
 /* ─── Delade formulär-inputs ──────────────────────── */
 .flow-input {

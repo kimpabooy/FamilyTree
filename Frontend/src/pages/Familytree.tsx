@@ -11,14 +11,14 @@ export default function FamilyTreePage() {
 
   return (
     <div className="familytree-page">
-      <div className="familytree-page__toolbar">
+      <div className="familytree-page-toolbar">
         <Button
           label="Skapa nytt familjeträd"
           variant="primary"
           onClick={() => navigate("/familytree/new")}
         />
       </div>
-      <div className="familytree-page__canvas">
+      <div className="familytree-page-canvas">
         <FamilyFlow familyTreeId={FAMILY_TREE_ID} />
       </div>
     </div>

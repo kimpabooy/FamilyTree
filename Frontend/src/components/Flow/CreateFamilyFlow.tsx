@@ -105,7 +105,7 @@ export default function CreateFamilyFlow() {
             disabled={!treeName.trim()}
             onClick={goToStep2}
           >
-            Fortsätt →
+            Fortsätt
           </button>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function CreateFamilyFlow() {
 
         <p className="create-flow-sidebar-hint">
           Dra en linje mellan två noder för att välja relationstyp —
-          förälder–barn eller partner.
+          förälder-barn eller partner.
         </p>
 
         <hr className="create-flow-sidebar-divider" />
@@ -196,7 +196,7 @@ export default function CreateFamilyFlow() {
           disabled={nodes.length === 0 || saving}
           onClick={handleSave}
         >
-          {saving ? "Sparar..." : "💾 Spara trädet"}
+          {saving ? "Sparar..." : "Spara trädet"}
         </button>
         <button
           className="flow-btn flow-btn--ghost"

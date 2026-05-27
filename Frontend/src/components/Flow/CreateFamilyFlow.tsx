@@ -36,7 +36,9 @@ export default function CreateFamilyFlow() {
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<Gender>(0);
   // Håller kvar en pending koppling tills användaren valt relationstyp.
-  const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);  
+  const [pendingConnection, setPendingConnection] = useState<Connection | null>(
+    null,
+  );
 
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) =>
@@ -80,11 +82,11 @@ export default function CreateFamilyFlow() {
     return (
       <div className="create-flow-centered">
         <div className="create-flow-card">
-          <h2 className="create-flow-card__heading">Skapa nytt familjeträd</h2>
-          <p className="create-flow-card__subtext">
+          <h2 className="create-flow-card-heading">Skapa nytt familjeträd</h2>
+          <p className="create-flow-card-subtext">
             Börja med att ge ditt träd ett namn.
           </p>
-          <label className="create-flow-card__label" htmlFor="tree-name">
+          <label className="create-flow-card-label" htmlFor="tree-name">
             Trädets namn
           </label>
           <input
@@ -142,10 +144,10 @@ export default function CreateFamilyFlow() {
 
       {/* Vänster panel */}
       <aside className="create-flow-sidebar">
-        <h3 className="create-flow-sidebar__heading">{treeName}</h3>
+        <h3 className="create-flow-sidebar-heading">{treeName}</h3>
 
         <section>
-          <p className="create-flow-sidebar__label">Lägg till person</p>
+          <p className="create-flow-sidebar-label">Lägg till person</p>
           <input
             className="flow-input"
             type="text"
@@ -178,16 +180,16 @@ export default function CreateFamilyFlow() {
           </button>
         </section>
 
-        <hr className="create-flow-sidebar__divider" />
+        <hr className="create-flow-sidebar-divider" />
 
-        <p className="create-flow-sidebar__hint">
+        <p className="create-flow-sidebar-hint">
           Dra en linje mellan två noder för att välja relationstyp —
           förälder–barn eller partner.
         </p>
 
-        <hr className="create-flow-sidebar__divider" />
+        <hr className="create-flow-sidebar-divider" />
 
-        {error && <p className="create-flow-sidebar__error">{error}</p>}
+        {error && <p className="create-flow-sidebar-error">{error}</p>}
 
         <button
           className={`flow-btn ${nodes.length > 0 ? "flow-btn--success" : "flow-btn--disabled"}`}

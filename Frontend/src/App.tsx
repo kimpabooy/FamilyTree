@@ -5,10 +5,11 @@ import SidePanel from "./components/layout/sidepanel.tsx";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import About from "./pages/About.tsx";
-import Contact from "./pages/Contact.tsx.tsx";
+import Contact from "./pages/Contact.tsx";
 import Familytree from "./pages/Familytree.tsx";
 import { useState } from "react";
 import CreateFamily from "./pages/CreateFamily.tsx";
+import Login from "./pages/AuthPage.tsx";
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,6 +30,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/familytree/new" element={<CreateFamily />} />
+          <Route path="/Login" element={<Login />} />
         </Routes>
       </main>
       <Footer />

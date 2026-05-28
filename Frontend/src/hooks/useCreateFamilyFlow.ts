@@ -203,7 +203,11 @@ export function useCreateFamilyFlow() {
     setSaving(true);
     setError(null);
     try {
-      const tree = await createFamilyTree({ name: treeName, isPublic: false });
+      const tree = await createFamilyTree({
+        name: treeName,
+        isPublic: false,
+        ownerId: "",
+      });
 
       const idMap = new Map<string, number>();
       for (const p of persons) {

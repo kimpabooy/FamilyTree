@@ -1,5 +1,4 @@
 import "@xyflow/react/dist/style.css";
-import RelationEdge from "../edges/FamilyRelationEdge";
 import {
   ReactFlow,
   Controls,
@@ -10,14 +9,37 @@ import {
   type Connection,
   type Node,
   type Edge,
+  type NodeTypes,
 } from "@xyflow/react";
+import PersonNode from "../nodes/PersonNode";
+import DeceasedPersonNode from "../nodes/DeceasedPersonNode";
+import GroundNode from "../nodes/GroundNode";
+import RelationEdge from "../edges/FamilyRelationEdge";
+
+/*
+  Nodtyper:
+    "person"   — levande person (ovan mark)
+    "deceased" — avliden person (under mark)
+    "ground"   — marklinjen, osynlig separator
+  Kantyper:
+    "family"   — förälder-barn (visas som RelationEdge)
+    "partner"  — partnerrelation (visas som RelationEdge men streckad)
+*/
+
+// ── Node- och kantdefinitioner ───────────────────────────────────────────────
+const nodeTypes: NodeTypes = {
+  person: PersonNode,
+  deceased: DeceasedPersonNode,
+  ground: GroundNode,
+};
 
 const edgeTypes = {
-  "parent-child": RelationEdge,
+  family: RelationEdge,
   partner: RelationEdge,
 };
 
-interface BasicFlowProps {
+// ── Canvas-komponenten ───────────────────────────────────────────────────────
+interface FamilyTreeCanvasProps {
   nodes: Node[];
   edges: Edge[];
   onNodesChange: (changes: NodeChange<Node>[]) => void;
@@ -26,22 +48,20 @@ interface BasicFlowProps {
   onEdgesDelete: (edges: { id: string }[]) => void;
 }
 
-/**
- * BasicFlow — ren React Flow-canvas utan någon backend-kännedom.
- * Ta emot nodes/edges och callbacks som props utifrån.
- * Använd den som "motorn" i FamilyFlow och CreateFamilyFlow.
- */
-export default function BasicFlow({
+// FamilyTreeCanvas — wrapper för ReactFlow som sätter upp nod- och kanttyper
+// och hanterar callbacks. Själva layouten och datan hanteras av hooken useFamilyTreeView.
+export default function FamilyTreeCanvas({
   nodes,
   edges,
   onNodesChange,
   onEdgesChange,
   onConnect,
   onEdgesDelete,
-}: BasicFlowProps) {
+}: FamilyTreeCanvasProps) {
   return (
-    <div style={{ width: "100%", height: "100%" }}>
+    <div style={{ width: "100%", height: "100%", touchAction: "none" }}>
       <ReactFlow
+        nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodes={nodes}
         edges={edges}
@@ -50,9 +70,17 @@ export default function BasicFlow({
         onEdgesDelete={onEdgesDelete}
         onConnect={onConnect}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
       >
         <Controls />
-        <MiniMap />
+        <MiniMap
+          className="canvas-minimap"
+          nodeColor={(n) => {
+            if (n.type === "person") return "#93c5fd";
+            if (n.type === "deceased") return "#94a3b8";
+            return "#e5e7eb";
+          }}
+        />
         <Background />
       </ReactFlow>
     </div>

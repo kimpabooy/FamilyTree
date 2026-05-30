@@ -2,16 +2,19 @@
 using Backend.Core.Models;
 using Backend.Services.DTOs.FamilyTree;
 using Backend.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.Services.Services
 {
     public class FamilyTreeService : IFamilyTreeService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<FamilyTreeService> _logger;
 
-        public FamilyTreeService(IUnitOfWork unitOfWork)
+        public FamilyTreeService(IUnitOfWork unitOfWork, ILogger<FamilyTreeService> logger)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<ResponseFamilyTree>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -26,13 +29,21 @@ namespace Backend.Services.Services
             return tree is null ? null : MapToResponse(tree);
         }
 
-        public async Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, CancellationToken cancellationToken = default)
+        public async Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, string ownerId, CancellationToken cancellationToken = default)
         {
+            // Ensure owner exists (defensive check)
+            var owner = await _unitOfWork.UserRepository.GetByIdAsync(ownerId, cancellationToken);
+            if (owner == null)
+            {
+                _logger.LogWarning("CreateAsync: no user found with id {OwnerId}", ownerId);
+                throw new InvalidOperationException($"Owner not found: {ownerId}");
+            }
+
             var toCreate = new FamilyTree
             {
                 Name = request.Name,
                 IsPublic = request.IsPublic,
-                OwnerId = request.OwnerId
+                OwnerId = ownerId
             };
 
             var created = _unitOfWork.FamilyTreeRepository.Add(toCreate);

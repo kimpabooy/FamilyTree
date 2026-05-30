@@ -1,7 +1,8 @@
-﻿using Backend.Services.DTOs.FamilyTree;
-using Backend.Services.Interface;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Backend.Services.Interface;
+using Backend.Services.DTOs.FamilyTree;
 
 namespace Backend.Api.Controllers
 {
@@ -24,7 +25,6 @@ namespace Backend.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> GetById(int id, CancellationToken cancellationToken)
         {
             var tree = await _familyTreeService.GetByIdAsync(id, cancellationToken);
@@ -33,27 +33,55 @@ namespace Backend.Api.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Create([FromBody] RequestCreateFamilyTree request, CancellationToken cancellationToken)
         {
-            var created = await _familyTreeService.CreateAsync(request, cancellationToken);
-            if (created is null) return BadRequest();
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(ownerId)) return Unauthorized();
+
+            try
+            {
+                var created = await _familyTreeService.CreateAsync(request, ownerId, cancellationToken);
+                return CreatedAtAction(nameof(GetById), new { id = created!.Id }, created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Clear, explicit error for client while you debug/update frontend
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<ResponseFamilyTree>> Update(int id, [FromBody] RequestUpdateFamilyTree request, CancellationToken cancellationToken)
         {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(ownerId)) return Unauthorized();
+
+            var existing = await _familyTreeService.GetByIdAsync(id, cancellationToken);
+            if (existing is null) return NotFound();
+
+            if (!string.Equals(existing.OwnerId, ownerId, StringComparison.Ordinal))
+                return Forbid();
+
             var updated = await _familyTreeService.UpdateAsync(id, request, cancellationToken);
             if (updated is null) return NotFound();
             return Ok(updated);
         }
 
         [HttpDelete("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(ownerId)) return Unauthorized();
+
+            var existing = await _familyTreeService.GetByIdAsync(id, cancellationToken);
+            if (existing is null) return NotFound();
+
+            if (!string.Equals(existing.OwnerId, ownerId, StringComparison.Ordinal))
+                return Forbid();
+
             var deleted = await _familyTreeService.DeleteAsync(id, cancellationToken);
             return deleted ? NoContent() : NotFound();
         }

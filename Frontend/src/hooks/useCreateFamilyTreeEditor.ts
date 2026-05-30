@@ -206,7 +206,6 @@ export function useCreateFamilyFlow() {
       const tree = await createFamilyTree({
         name: treeName,
         isPublic: false,
-        ownerId: "",
       });
 
       const idMap = new Map<string, number>();

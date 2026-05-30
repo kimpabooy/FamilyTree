@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type Node, type Edge } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
 import { getPersonsByTree } from "../services/PersonService";
@@ -16,115 +16,198 @@ import {
   deletePartnerRelation,
 } from "../services/RelationService";
 
-/*
-  useFamilyTreeFlow — hämtar ett befintligt träd från backend och bygger
-  React Flow-noder och kanter med Dagre-layout.
-  Exponerar addParentChildEdge och removeEdge för FamilyFlow att använda.
-*/
-
-const NODE_WIDTH = 200;
+const NODE_WIDTH  = 200;
 const NODE_HEIGHT = 60;
+// Vertikalt avstånd från marklinjen till första nod-raden
+const GROUND_OFFSET = 80;
 
-function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
+// ── Dagre-layout ─────────────────────────────────────────────────────────────
+
+function runDagre(nodes: Node[], parentChildEdges: Edge[]): Node[] {
+  if (nodes.length === 0) return nodes;
+
   const graph = new dagre.graphlib.Graph();
   graph.setDefaultEdgeLabel(() => ({}));
-  graph.setGraph({ direction: "TB", nodesep: 10, ranksep: 120 });
+  graph.setGraph({ direction: "TB", nodesep: 20, ranksep: 120 });
 
-  nodes.forEach((node) =>
-    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT }),
+  nodes.forEach((n) =>
+    graph.setNode(n.id, { width: NODE_WIDTH, height: NODE_HEIGHT }),
   );
-  edges
-    .filter((edge) => edge.type === "parent-child")
-    .forEach((edge) => graph.setEdge(edge.source, edge.target));
+  parentChildEdges.forEach((e) => graph.setEdge(e.source, e.target));
 
   dagre.layout(graph);
 
-  return nodes.map((node) => {
-    const { x, y } = graph.node(node.id);
+  return nodes.map((n) => {
+    const pos = graph.node(n.id);
     return {
-      ...node,
+      ...n,
       position: {
-        x: x - NODE_WIDTH / 2,
-        y: y - NODE_HEIGHT / 2,
+        x: pos.x - NODE_WIDTH / 2,
+        y: pos.y - NODE_HEIGHT / 2,
       },
     };
   });
 }
 
-function buildNodes(persons: Person[]): Node[] {
-  return persons.map((person) => ({
-    id: String(person.id),
-    position: { x: 0, y: 0 },
-    data: {
-      label: `${person.firstName} ${person.lastName}`,
-      person,
-    },
-    style: {
-      width: NODE_WIDTH,
-      background:
-        person.gender === 0
-          ? "#dbeafe"
-          : person.gender === 1
-            ? "#fce7f3"
-            : "#f3f4f6",
-      border: "1px solid #d1d5db",
-      borderRadius: 8,
-      fontSize: 13,
-      padding: "8px 12px",
+/**
+ * Beräknar layout för levande och avlidna separat.
+ *
+ * Levande:  Dagre TB, Y-värden positiva (grenar upp från marklinjen).
+ * Avlidna:  Dagre TB, Y-värden speglas negativt (rötter ned från marklinjen).
+ *
+ * Marklinjen är vid Y = 0.
+ */
+function applyTreeLayout(
+  aliveNodes: Node[],
+  deceasedNodes: Node[],
+  parentChildEdges: Edge[],
+): Node[] {
+  const aliveIds  = new Set(aliveNodes.map((n) => n.id));
+  const deadIds   = new Set(deceasedNodes.map((n) => n.id));
+
+  const aliveEdges = parentChildEdges.filter(
+    (e) => aliveIds.has(e.source) && aliveIds.has(e.target),
+  );
+  const deadEdges = parentChildEdges.filter(
+    (e) => deadIds.has(e.source) && deadIds.has(e.target),
+  );
+
+  const laidAlive = runDagre(aliveNodes, aliveEdges);
+
+  // Hitta max Y i levande-layouten för att veta hur högt trädet är
+  const aliveMaxY = laidAlive.reduce(
+    (max, n) => Math.max(max, n.position.y + NODE_HEIGHT),
+    0,
+  );
+
+  // Positionera levande noder ovanför marklinjen
+  const positionedAlive = laidAlive.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x,
+      // Flytta upp så att nedersta raden är GROUND_OFFSET ovanför Y=0
+      y: n.position.y - aliveMaxY - GROUND_OFFSET,
     },
   }));
+
+  // Dagre för avlidna (TB = föräldrar ovanför barn i databasen)
+  const laidDead = runDagre(deceasedNodes, deadEdges);
+
+  // Spegla och placera under marklinjen
+  const positionedDead = laidDead.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x,
+      y: GROUND_OFFSET + (n.position.y - NODE_HEIGHT / 2),
+    },
+  }));
+
+  return [...positionedAlive, ...positionedDead];
 }
 
-function buildEdges(relations: ParentChildRelation[]): Edge[] {
+// ── Node/Edge-builders ────────────────────────────────────────────────────────
+
+function buildPersonNode(person: Person): Node {
+  const isDeceased = person.deathDate !== null;
+  return {
+    id: String(person.id),
+    type: isDeceased ? "deceased" : "person",
+    position: { x: 0, y: 0 },
+    data: { person },
+    style: {
+      width: NODE_WIDTH,
+    },
+  };
+}
+
+function buildGroundNode(): Node {
+  return {
+    id: "ground-marker",
+    type: "ground",
+    position: { x: -500, y: -NODE_HEIGHT / 2 },
+    data: {},
+    // Marklinjen sträcks horisontellt via CSS — bredden hanteras i nod-komponenten
+    style: { width: 2000, pointerEvents: "none" },
+    selectable: false,
+    draggable: false,
+    connectable: false,
+  };
+}
+
+function buildParentChildEdges(relations: ParentChildRelation[]): Edge[] {
   return relations.map((r) => ({
     id: `pc-${r.id}`,
     source: String(r.parentId),
     target: String(r.childId),
-    type: "parent-child",
+    type: "family",
     animated: false,
     style: { stroke: "#6b7280" },
   }));
 }
 
 function buildPartnerEdges(
-  relations: { sourceId: number; relation: PartnerRelation }[],
+  seeds: { sourceId: number; relation: PartnerRelation }[],
 ): Edge[] {
-  return relations.map(({ sourceId, relation }) => ({
+  return seeds.map(({ sourceId, relation }) => ({
     id: `partner-${relation.id}`,
     source: String(sourceId),
     target: String(relation.partner.id),
     type: "partner",
     animated: false,
     style: { stroke: "#e879a0", strokeDasharray: "6 3" },
-    label: "Partner",
   }));
 }
 
-async function buildPartnerRelationSeeds(
+async function fetchPartnerSeeds(
   persons: Person[],
 ): Promise<{ sourceId: number; relation: PartnerRelation }[]> {
-  const seenRelationIds = new Set<number>();
+  const seen  = new Set<number>();
   const seeds: { sourceId: number; relation: PartnerRelation }[] = [];
-
   await Promise.all(
-    persons.map(async (person) => {
-      const relations = await getPartnerRelations(person.id);
-      relations.forEach((relation) => {
-        if (seenRelationIds.has(relation.id)) return;
-        seenRelationIds.add(relation.id);
-        seeds.push({ sourceId: person.id, relation });
+    persons.map(async (p) => {
+      const rels = await getPartnerRelations(p.id);
+      rels.forEach((r) => {
+        if (seen.has(r.id)) return;
+        seen.add(r.id);
+        seeds.push({ sourceId: p.id, relation: r });
       });
     }),
   );
-
   return seeds;
 }
 
-export function useFamilyTreeFlow(familyTreeId: number) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+// ── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useFamilyTreeView(familyTreeId: number) {
+  const [nodes, setNodes]     = useState<Node[]>([]);
+  const [edges, setEdges]     = useState<Edge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
+
+  const edgesRef = useRef<Edge[]>([]);
+
+  const setEdgesAndRef = useCallback(
+    (updater: Edge[] | ((prev: Edge[]) => Edge[])) => {
+      setEdges((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        edgesRef.current = next;
+        return next;
+      });
+    },
+    [],
+  );
+
+  const rebuildLayout = useCallback(
+    (allNodes: Node[], allEdges: Edge[]): Node[] => {
+      const pcEdges      = allEdges.filter((e) => e.type === "family");
+      const aliveNodes   = allNodes.filter((n) => n.type === "person");
+      const deadNodes    = allNodes.filter((n) => n.type === "deceased");
+      const groundNode   = allNodes.find((n) => n.type === "ground");
+      const laid         = applyTreeLayout(aliveNodes, deadNodes, pcEdges);
+      return groundNode ? [...laid, groundNode] : laid;
+    },
+    [],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -134,23 +217,29 @@ export function useFamilyTreeFlow(familyTreeId: number) {
         getPersonsByTree(familyTreeId),
         getParentChildRelationsByTree(familyTreeId),
       ]);
-      const partnerRelationSeeds = await buildPartnerRelationSeeds(persons);
+      const partnerSeeds = await fetchPartnerSeeds(persons);
 
-      const rawNodes = buildNodes(persons);
-      const rawEdges = [
-        ...buildEdges(relations),
-        ...buildPartnerEdges(partnerRelationSeeds),
-      ];
-      const laidOutNodes = applyDagreLayout(rawNodes, rawEdges);
+      const personNodes = persons.map(buildPersonNode);
+      const groundNode  = buildGroundNode();
 
-      setNodes(laidOutNodes);
-      setEdges(rawEdges);
+      const pcEdges      = buildParentChildEdges(relations);
+      const partnerEdges = buildPartnerEdges(partnerSeeds);
+      const allEdges     = [...pcEdges, ...partnerEdges];
+
+      const laidNodes = rebuildLayout(
+        [...personNodes, groundNode],
+        allEdges,
+      );
+
+      edgesRef.current = allEdges;
+      setNodes(laidNodes);
+      setEdgesAndRef(allEdges);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Okänt fel");
     } finally {
       setLoading(false);
     }
-  }, [familyTreeId]);
+  }, [familyTreeId, rebuildLayout, setEdgesAndRef]);
 
   useEffect(() => {
     load();
@@ -167,34 +256,28 @@ export function useFamilyTreeFlow(familyTreeId: number) {
       id: `pc-${created.id}`,
       source: String(parentId),
       target: String(childId),
-      type: "parent-child",
+      type: "family",
       animated: false,
       style: { stroke: "#6b7280" },
     };
 
-    setEdges((prevEdges) => {
-      const updatedEdges = [...prevEdges, newEdge];
-      setNodes((prevNodes) => applyDagreLayout(prevNodes, updatedEdges));
-      return updatedEdges;
-    });
+    const updated = [...edgesRef.current, newEdge];
+    setEdgesAndRef(updated);
+    setNodes((prev) => rebuildLayout(prev, updated));
   }
 
   async function removeEdge(edgeId: string): Promise<void> {
     if (edgeId.startsWith("pc-")) {
-      const dbId = Number(edgeId.replace("pc-", ""));
-      await deleteParentChildRelation(dbId);
+      await deleteParentChildRelation(Number(edgeId.replace("pc-", "")));
     } else if (edgeId.startsWith("partner-")) {
-      const dbId = Number(edgeId.replace("partner-", ""));
-      await deletePartnerRelation(dbId);
+      await deletePartnerRelation(Number(edgeId.replace("partner-", "")));
     } else {
       throw new Error(`Okänd edge-typ: ${edgeId}`);
     }
 
-    setEdges((prevEdges) => {
-      const updatedEdges = prevEdges.filter((e) => e.id !== edgeId);
-      setNodes((prevNodes) => applyDagreLayout(prevNodes, updatedEdges));
-      return updatedEdges;
-    });
+    const updated = edgesRef.current.filter((e) => e.id !== edgeId);
+    setEdgesAndRef(updated);
+    setNodes((prev) => rebuildLayout(prev, updated));
   }
 
   return {
@@ -203,7 +286,7 @@ export function useFamilyTreeFlow(familyTreeId: number) {
     loading,
     error,
     setNodes,
-    setEdges,
+    setEdges: setEdgesAndRef,
     addParentChildEdge,
     removeEdge,
   };

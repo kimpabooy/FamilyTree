@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BasicFlow from "../canvas/FamilyTreeCanvas";
+import FamilyTreeCanvas from "../canvas/FamilyTreeCanvas";
 import RelationTypeDialog from "./RelationTypeDialog";
 import { useCreateFamilyFlow } from "../../../hooks/useCreateFamilyTreeEditor";
 import type { Gender } from "../../../types/Enums";
@@ -13,7 +13,7 @@ import {
   type Node,
 } from "@xyflow/react";
 
-export default function CreateFamilyFlow() {
+export default function CreateFamilyTreeEditor() {
   const navigate = useNavigate();
   const {
     step,
@@ -32,14 +32,19 @@ export default function CreateFamilyFlow() {
     saveAll,
   } = useCreateFamilyFlow();
 
+  // ── Formulärstate ───────────────────────────────────────────────────────────
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<Gender>(0);
-  // Håller kvar en pending koppling tills användaren valt relationstyp.
+  const [birthDate, setBirthDate] = useState("");
+  const [isDeceased, setIsDeceased] = useState(false);
+  const [deathDate, setDeathDate] = useState("");
+
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(
     null,
   );
 
+  // ── Canvas-callbacks ────────────────────────────────────────────────────────
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) =>
       setNodes((prev) => applyNodeChanges(changes, prev)),
@@ -52,32 +57,35 @@ export default function CreateFamilyFlow() {
     [setEdges],
   );
 
-  // Visa dialog istället för att direkt skapa relationen
   const onConnect = useCallback((params: Connection) => {
     setPendingConnection(params);
   }, []);
 
+  // ── Formulär-handlers ───────────────────────────────────────────────────────
   const handleAddPerson = () => {
     if (!firstName.trim() || !lastName.trim()) return;
     addPerson({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       gender,
+      birthDate: birthDate || null,
+      deathDate: isDeceased ? deathDate || null : null,
     });
+    // Återställ formuläret
     setFirstName("");
     setLastName("");
     setGender(0);
+    setBirthDate("");
+    setIsDeceased(false);
+    setDeathDate("");
   };
 
   const handleSave = async () => {
     const treeId = await saveAll();
-    if (treeId) {
-      navigate(`/familytree/${treeId}`);
-    }
+    if (treeId) navigate(`/familytree/${treeId}`);
   };
 
   // ── Steg 1: Namnge trädet ───────────────────────────────────────────────────
-
   if (step === 1) {
     return (
       <div className="create-flow-centered">
@@ -113,10 +121,8 @@ export default function CreateFamilyFlow() {
   }
 
   // ── Steg 2: Lägg till personer + koppla relationer ─────────────────────────
-
   return (
     <div className="create-flow-workspace">
-      {/* Relationstyp-dialog — visas ovanpå canvas när en koppling dragits */}
       {pendingConnection && (
         <RelationTypeDialog
           onParentChild={() => {
@@ -133,11 +139,6 @@ export default function CreateFamilyFlow() {
             );
             setPendingConnection(null);
           }}
-          //   onSibling={() => {
-          //     connectPersons(pendingConnection.source!, pendingConnection.target!);
-          //     connectPersons(pendingConnection.target!, pendingConnection.source!);
-          //     setPendingConnection(null);
-          //   }}
           onClose={() => setPendingConnection(null)}
         />
       )}
@@ -148,6 +149,7 @@ export default function CreateFamilyFlow() {
 
         <section>
           <p className="create-flow-sidebar-label">Lägg till person</p>
+
           <input
             className="flow-input"
             type="text"
@@ -171,10 +173,51 @@ export default function CreateFamilyFlow() {
             <option value={1}>Kvinna</option>
             <option value={2}>Annat / okänt</option>
           </select>
+
+          {/* Födelsedatum */}
+          <label className="create-flow-sidebar-field-label">
+            Födelsedatum
+          </label>
+          <input
+            className="flow-input"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+          />
+
+          {/* Avliden-toggle */}
+          <label className="create-flow-sidebar-toggle">
+            <input
+              type="checkbox"
+              checked={isDeceased}
+              onChange={(e) => {
+                setIsDeceased(e.target.checked);
+                if (!e.target.checked) setDeathDate("");
+              }}
+            />
+            Avliden
+          </label>
+
+          {/* Dödsdatum — visas bara om "Avliden" är ikryssad */}
+          {isDeceased && (
+            <>
+              <label className="create-flow-sidebar-field-label">
+                Dödsdatum
+              </label>
+              <input
+                className="flow-input"
+                type="date"
+                value={deathDate}
+                onChange={(e) => setDeathDate(e.target.value)}
+              />
+            </>
+          )}
+
           <button
             className={`flow-btn ${firstName.trim() && lastName.trim() ? "flow-btn--primary" : "flow-btn--disabled"}`}
             disabled={!firstName.trim() || !lastName.trim()}
             onClick={handleAddPerson}
+            style={{ marginTop: 10 }}
           >
             + Lägg till
           </button>
@@ -184,7 +227,7 @@ export default function CreateFamilyFlow() {
 
         <p className="create-flow-sidebar-hint">
           Dra en linje mellan två noder för att välja relationstyp —
-          förälder-barn eller partner.
+          förälder–barn eller partner.
         </p>
 
         <hr className="create-flow-sidebar-divider" />
@@ -208,14 +251,16 @@ export default function CreateFamilyFlow() {
 
       {/* Canvas */}
       <div className="create-flow-canvas">
-        <BasicFlow
+        <FamilyTreeCanvas
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgesDelete={() => {
-            /* Lokala kanter — ingen backend att anropa ännu */
+            // Kanterna hanteras via onConnect och onEdgesDelete, så vi ignorerar onEdgesChange
+            // Vi låter användaren ta bort kanter för att ångra relationer, men vi behöver inte göra något mer än att ta bort kanten i datan.
+            // Behöver koppla bort relationen i backend.
           }}
         />
       </div>

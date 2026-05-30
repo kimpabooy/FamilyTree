@@ -1,35 +1,28 @@
 import { useCallback } from "react";
 import {
   applyNodeChanges,
-  applyEdgeChanges,
-  addEdge,
   type NodeChange,
   type EdgeChange,
   type Connection,
   type Node,
 } from "@xyflow/react";
-import BasicFlow from "../canvas/FamilyTreeCanvas";
-import { useFamilyTreeFlow } from "../../../hooks/useFamilyTreeView";
+import FamilyTreeCanvas from "../canvas/FamilyTreeCanvas";
+import { useFamilyTreeView } from "../../../hooks/useFamilyTreeView";
 
-interface FamilyFlowProps {
+interface FamilyTreeViewProps {
   familyTreeId: number;
 }
 
-/*
- * FamilyFlow — visar ett befintligt familjeträd.
- * Ansvarar för: hämta data, hantera callbacks, skicka allt vidare till BasicFlow.
- */
-export default function FamilyFlow({ familyTreeId }: FamilyFlowProps) {
+export default function FamilyTreeView({ familyTreeId }: FamilyTreeViewProps) {
   const {
     nodes,
     edges,
     loading,
     error,
     setNodes,
-    setEdges,
     addParentChildEdge,
     removeEdge,
-  } = useFamilyTreeFlow(familyTreeId);
+  } = useFamilyTreeView(familyTreeId);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) =>
@@ -37,11 +30,8 @@ export default function FamilyFlow({ familyTreeId }: FamilyFlowProps) {
     [setNodes],
   );
 
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((prev) => applyEdgeChanges(changes, prev)),
-    [setEdges],
-  );
+  // Edgorna hanteras via onConnect och onEdgesDelete, så vi ignorerar onEdgesChange
+  const onEdgesChange = useCallback((_changes: EdgeChange[]) => {}, []);
 
   const onConnect = useCallback(
     async (params: Connection) => {
@@ -51,16 +41,15 @@ export default function FamilyFlow({ familyTreeId }: FamilyFlowProps) {
         await addParentChildEdge(parentId, childId);
       } catch (err) {
         console.error("Kunde inte skapa relation:", err);
-        setEdges((prev) => addEdge(params, prev));
       }
     },
-    [addParentChildEdge, setEdges],
+    [addParentChildEdge],
   );
 
   const onEdgesDelete = useCallback(
     async (deletedEdges: { id: string }[]) => {
       try {
-        await Promise.all(deletedEdges.map((edge) => removeEdge(edge.id)));
+        await Promise.all(deletedEdges.map((e) => removeEdge(e.id)));
       } catch (err) {
         console.error("Kunde inte ta bort relation:", err);
       }
@@ -72,7 +61,7 @@ export default function FamilyFlow({ familyTreeId }: FamilyFlowProps) {
   if (error) return <p style={{ padding: 24, color: "red" }}>Fel: {error}</p>;
 
   return (
-    <BasicFlow
+    <FamilyTreeCanvas
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}

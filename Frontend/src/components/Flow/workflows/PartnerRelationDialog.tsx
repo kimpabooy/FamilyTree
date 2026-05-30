@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useCreateFamilyFlow } from "../../hooks/useCreateFamilyFlow";
+import { useCreateFamilyFlow } from "../../../hooks/useCreateFamilyTreeEditor";
 
 /*
  * CreatePartnerFlow — flöde för att skapa en partnerrelation mellan två personer.

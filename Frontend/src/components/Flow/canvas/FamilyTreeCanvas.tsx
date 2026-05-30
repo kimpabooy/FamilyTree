@@ -1,5 +1,5 @@
 import "@xyflow/react/dist/style.css";
-import RelationEdge from "./RelationEdge";
+import RelationEdge from "../edges/FamilyRelationEdge";
 import {
   ReactFlow,
   Controls,

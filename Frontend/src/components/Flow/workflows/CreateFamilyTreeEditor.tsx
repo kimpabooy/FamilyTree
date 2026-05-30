@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import BasicFlow from "./BasicFlow";
-import ConnectionTypeDialog from "../Ui/ConnectionTypeDialog";
-import { useCreateFamilyFlow } from "../../hooks/useCreateFamilyFlow";
-import type { Gender } from "../../types/Enums";
+import BasicFlow from "../canvas/FamilyTreeCanvas";
+import RelationTypeDialog from "./RelationTypeDialog";
+import { useCreateFamilyFlow } from "../../../hooks/useCreateFamilyTreeEditor";
+import type { Gender } from "../../../types/Enums";
 import {
   applyNodeChanges,
   applyEdgeChanges,
@@ -118,7 +118,7 @@ export default function CreateFamilyFlow() {
     <div className="create-flow-workspace">
       {/* Relationstyp-dialog — visas ovanpå canvas när en koppling dragits */}
       {pendingConnection && (
-        <ConnectionTypeDialog
+        <RelationTypeDialog
           onParentChild={() => {
             connectPersons(
               pendingConnection.source!,

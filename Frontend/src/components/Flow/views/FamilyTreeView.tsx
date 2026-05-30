@@ -8,8 +8,8 @@ import {
   type Connection,
   type Node,
 } from "@xyflow/react";
-import BasicFlow from "./BasicFlow";
-import { useFamilyTreeFlow } from "../../hooks/useFamilyTree";
+import BasicFlow from "../canvas/FamilyTreeCanvas";
+import { useFamilyTreeFlow } from "../../../hooks/useFamilyTreeView";
 
 interface FamilyFlowProps {
   familyTreeId: number;

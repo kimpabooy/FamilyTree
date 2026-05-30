@@ -1,4 +1,4 @@
-interface ConnectionTypeDialogProps {
+interface RelationTypeDialogProps {
   onParentChild: () => void;
   onPartner: () => void;
   //   onSibling: () => void;
@@ -6,14 +6,14 @@ interface ConnectionTypeDialogProps {
 }
 
 /**
- * ConnectionTypeDialog — visas när användaren drar en linje mellan två noder.
+ * RelationTypeDialog — visas när användaren drar en linje mellan två noder.
  * Låter användaren välja om det är en förälder-barn- eller partnerrelation.
  */
-export default function ConnectionTypeDialog({
+export default function RelationTypeDialog({
   onParentChild,
   onPartner,
   onClose,
-}: ConnectionTypeDialogProps) {
+}: RelationTypeDialogProps) {
   return (
     <div className="dialog-overlay">
       <div className="dialog-card">

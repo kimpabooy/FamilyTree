@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import FamilyFlow from "../components/Flow/FamilyFlow";
+import FamilyFlow from "../components/Flow/views/FamilyTreeView";
 import Button from "../components/Ui/Button";
+import { useState } from "react";
 
 // TODO: Byt ut hårdkodat id mot dynamisk routing, t.ex. useParams()
 // när du har en träd-väljar-sida eller hämtar inloggrad användares träd.
@@ -8,6 +9,7 @@ const FAMILY_TREE_ID = 2;
 
 export default function FamilyTreePage() {
   const navigate = useNavigate();
+  const [familyTreeId, setFamilyTreeId] = useState<number>(FAMILY_TREE_ID);
 
   return (
     <div className="familytree-page">
@@ -27,9 +29,16 @@ export default function FamilyTreePage() {
           variant="danger"
           onClick={() => navigate("/")}
         />
+        <input
+          type="text"
+          placeholder="Sök i familjeträdet"
+          onChange={(event) =>
+            setFamilyTreeId(Number(event.target.value) || FAMILY_TREE_ID)
+          }
+        />
       </div>
       <div className="familytree-page-canvas">
-        <FamilyFlow familyTreeId={FAMILY_TREE_ID} />
+        <FamilyFlow familyTreeId={familyTreeId} />
       </div>
     </div>
   );

@@ -72,7 +72,6 @@
     --create-card-max-width:    440px;
     --dialog-max-width:         360px;
     
-    /* Max-bredd specifikt för sidinnehåll */
     --content-max-width:        860px;
 
     --background-img:           url('../src/assets/background-tree.Webp');
@@ -262,11 +261,6 @@ body,
 }
 
 /* ─── Generella sidor ─────────────────────────────── */
-/*
-  Bakgrundsbilden täcker hela sidan via gradient-teknik.
-  Innehållet centreras med max-width + margin: auto på sektionerna —
-  ingen margin-right-hack behövs, fungerar på alla skärmstorlekar.
-*/
 .auth-page,
 .home-page,
 .about-page,
@@ -399,69 +393,156 @@ body,
     }
 }
 
-/* ─── Contact ────────────────────────────────────────── */
+/* ─── Contact ─────────────────────────────────────── */
+.contact-page {
+    align-items: center;
+    justify-content: center;
+}
+
 .contact-card {
     background: var(--bg-elevated);
     border: var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
-    max-width: 720px;
-    margin: var(--space-6) auto 0;
+    padding: var(--space-10) var(--space-12);
+    box-shadow: var(--shadow-md);
+    max-width: 540px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    border: solid var(--color-border) 12px;
+    box-shadow: 0 0 0 1px var(--color-border), var(--shadow-panel);
+    
 }
 
-.contact-card h2 {
-    font-size: var(--font-size-lg);
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    box-shadow: 0 0 10px 0 var(--color-border), var(--shadow-panel);
+}
+
+/* Sidhuvud i kortet */
+.contact-card > h1 {
+    font-size: var(--font-size-2xl);
     color: var(--color-accent);
-    margin-bottom: var(--space-3);
+    margin: 0;
 }
 
+.contact-image {
+    display: block;
+    position: relative;
+    box-shadow: 0 0 50px 0 var(--color-border), var(--shadow-panel);
+    width: 140px;
+    height: 180px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    align-self: center;
+}
+
+.contact-card > p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin: calc(-1 * var(--space-4)) 0 0;  /* dra ihop gap mot h1 */
+}
+
+/* Avdelare mellan sektioner */
+.contact-card h2 {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accent);
+    padding-bottom: var(--space-2);
+    border-bottom: var(--border);
+    margin-bottom: var(--space-1);
+}
+
+/* Kontaktinfo-rader */
+.contact-card > p:not(:first-of-type),
 .contact-card p {
     color: var(--color-text);
-    line-height: 1.5;
-    margin-bottom: var(--space-3);
+    line-height: 1.7;
+    font-size: var(--font-size-base);
 }
 
+.contact-card p a {
+    color: var(--color-accent);
+
+    &:hover { 
+        color: var(--color-accent-hover); 
+    }
+}
+
+/* ─── Sociala medier ──────────────────────────────── */
 .contact-social {
-    margin-top: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
 }
 
 .social-list {
     display: flex;
-    width: max-content;
     gap: var(--space-4);
-    align-items: center;
     flex-wrap: wrap;
 }
 
+/* Varje socialt kort */
 .social-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-2);
-    background: transparent;
-    padding: 6px 8px;
-    border-radius: var(--radius-md);
+    gap: var(--space-3);
+    background: var(--bg-surface);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    flex: 1;
+    min-width: 120px;
+    transition: box-shadow var(--transition-base), border-color var(--transition-base);
+
+    &:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: var(--color-dark-beige);
+    }
 }
 
-.social-item a {
-    color: var(--color-accent);
-    font-weight: var(--font-weight-medium);
-}
-
+/* QR-bild – kompakt */
 .social-item img {
-    width: 44px;
-    height: 44px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid rgba(0,0,0,0.06);
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
     background: #fff;
+    display: block;
+}
+
+/* Länktext under QR-koden */
+.social-item a {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+    transition: color var(--transition-fast);
+
+    &:hover { color: var(--color-accent-hover); }
 }
 
 @media (max-width: 480px) {
-    .social-item img { width: 36px; height: 36px; }
-    .contact-card { padding: var(--space-4); }
-}
+    .contact-card {
+        padding: var(--space-6) var(--space-4);
+    }
 
+    .social-item img {
+        width: 72px;
+        height: 72px;
+    }
+
+    .social-list {
+        gap: var(--space-3);
+    }
+}
 
 /* ─── Delade formulär-inputs ──────────────────────── */
 .flow-input {
@@ -567,6 +648,17 @@ body,
     padding: var(--space-3) var(--space-4);
     border-bottom: var(--border);
     flex-shrink: 0;
+    gap: var(--space-4);
+    display: flex;
+
+    & input {
+        flex: 1;
+        max-width: 300px;
+        border: var(--border);
+        border-radius: var(--radius-md);
+        border-color: var(--color-border);
+        padding: var(--space-2) var(--space-3);
+    }
 }
 
 .familytree-page-canvas {
@@ -881,6 +973,17 @@ body,
     .side-panel-overlay.open { display: block; }
 
     .main-content { grid-column: 1; }
+
+    .familytree-page-toolbar {
+        justify-content: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        & input {
+            max-width: none; 
+            width: 100%; 
+        }
+    }
 
     .auth-card { padding: var(--space-8) var(--space-6); }
 

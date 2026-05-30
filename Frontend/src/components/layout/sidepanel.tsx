@@ -26,7 +26,7 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
         <ul>
           <li>
             <Link to="/" onClick={onClose}>
-              Home
+              Hem
             </Link>
           </li>
           <li>
@@ -36,12 +36,12 @@ export default function SidePanel({ isOpen, onClose }: SidePanelProps) {
           </li>
           <li>
             <Link to="/about" onClick={onClose}>
-              About
+              Om sidan
             </Link>
           </li>
           <li>
             <Link to="/contact" onClick={onClose}>
-              Contact
+              Kontakt
             </Link>
           </li>
         </ul>

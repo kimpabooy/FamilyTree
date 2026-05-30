@@ -71,7 +71,6 @@
     --auth-card-max-width:      420px;
     --create-card-max-width:    440px;
     --dialog-max-width:         360px;
-    
     --content-max-width:        860px;
 
     --background-img:           url('../src/assets/background-tree.Webp');
@@ -260,18 +259,11 @@ body,
     -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Generella sidor ─────────────────────────────── */
-.auth-page,
+/* ─── Delad bakgrundsbild (alla sidor med bg) ─────── */
 .home-page,
 .about-page,
-.contact-page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 2rem;
-    min-height: 100%;
-
+.contact-page,
+.auth-page {
     background-image:
         linear-gradient(
             rgba(253, 246, 240, var(--bg-overlay-opacity)),
@@ -281,6 +273,18 @@ body,
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+/* ─── Innehållssidor (home / about / contact) ─────── */
+.home-page,
+.about-page,
+.contact-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    min-height: 100%;
 
     & h1 {
         font-size: var(--font-size-2xl);
@@ -362,13 +366,14 @@ body,
     }
 }
 
-/* ─── About ────────────────────────────────────────── */
+/* ─── About ───────────────────────────────────────── */
 .about-page {
     & h1, h2 {
         font-size: var(--font-size-xl);
         color: var(--color-accent);
         text-align: center;
     }
+
     & p {
         font-size: var(--font-size-lg);
         color: var(--color-text);
@@ -376,6 +381,7 @@ body,
         text-align: center;
     }
 }
+
 .about-content {
     background: var(--bg-elevated);
     border: var(--border);
@@ -401,19 +407,16 @@ body,
 
 .contact-card {
     background: var(--bg-elevated);
-    border: var(--border);
+    border: solid var(--color-border) 12px;
     border-radius: var(--radius-lg);
     padding: var(--space-10) var(--space-12);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 0 0 1px var(--color-border), var(--shadow-panel);
     max-width: 540px;
     width: 100%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
-    border: solid var(--color-border) 12px;
-    box-shadow: 0 0 0 1px var(--color-border), var(--shadow-panel);
-    
 }
 
 .contact-info {
@@ -424,7 +427,6 @@ body,
     box-shadow: 0 0 10px 0 var(--color-border), var(--shadow-panel);
 }
 
-/* Sidhuvud i kortet */
 .contact-card > h1 {
     font-size: var(--font-size-2xl);
     color: var(--color-accent);
@@ -445,10 +447,9 @@ body,
 .contact-card > p {
     color: var(--color-text-muted);
     font-size: var(--font-size-base);
-    margin: calc(-1 * var(--space-4)) 0 0;  /* dra ihop gap mot h1 */
+    margin: calc(-1 * var(--space-4)) 0 0;
 }
 
-/* Avdelare mellan sektioner */
 .contact-card h2 {
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
@@ -458,7 +459,6 @@ body,
     margin-bottom: var(--space-1);
 }
 
-/* Kontaktinfo-rader */
 .contact-card > p:not(:first-of-type),
 .contact-card p {
     color: var(--color-text);
@@ -469,9 +469,7 @@ body,
 .contact-card p a {
     color: var(--color-accent);
 
-    &:hover { 
-        color: var(--color-accent-hover); 
-    }
+    &:hover { color: var(--color-accent-hover); }
 }
 
 /* ─── Sociala medier ──────────────────────────────── */
@@ -487,7 +485,6 @@ body,
     flex-wrap: wrap;
 }
 
-/* Varje socialt kort */
 .social-item {
     display: flex;
     flex-direction: column;
@@ -507,7 +504,6 @@ body,
     }
 }
 
-/* QR-bild – kompakt */
 .social-item img {
     width: 88px;
     height: 88px;
@@ -518,7 +514,6 @@ body,
     display: block;
 }
 
-/* Länktext under QR-koden */
 .social-item a {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
@@ -527,21 +522,6 @@ body,
     transition: color var(--transition-fast);
 
     &:hover { color: var(--color-accent-hover); }
-}
-
-@media (max-width: 480px) {
-    .contact-card {
-        padding: var(--space-6) var(--space-4);
-    }
-
-    .social-item img {
-        width: 72px;
-        height: 72px;
-    }
-
-    .social-list {
-        gap: var(--space-3);
-    }
 }
 
 /* ─── Delade formulär-inputs ──────────────────────── */
@@ -748,6 +728,32 @@ body,
     color: var(--color-text-muted);
 }
 
+.create-flow-sidebar-field-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    margin: var(--space-2) 0 var(--space-1);
+}
+
+.create-flow-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    margin: var(--space-3) 0 var(--space-1);
+    cursor: pointer;
+    user-select: none;
+
+    & input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--color-accent);
+        cursor: pointer;
+    }
+}
+
 .create-flow-sidebar-hint {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
@@ -773,7 +779,19 @@ body,
     min-height: 0;
 }
 
+.canvas-minimap > * {
+    border: var(--border);
+    border-radius: var(--radius-md);
+    border-radius: 4px;
+    width: 85px;
+    height: 85px;
+    &:hover {
+        transform: scale(2) translate(-15px, -15px);
+    }
+}
+
 /* ─── Auth-sida ───────────────────────────────────── */
+/* Bakgrundsbilden ärvs från den delade regeln ovanför */
 .auth-page {
     display: flex;
     align-items: center;
@@ -979,17 +997,25 @@ body,
         flex-direction: column;
         align-items: stretch;
         gap: var(--space-3);
+
         & input {
-            max-width: none; 
-            width: 100%; 
+            max-width: none;
+            width: 100%;
         }
     }
 
     .auth-card { padding: var(--space-8) var(--space-6); }
 
-    .home-features-section .home-feature {
-        max-width: 100%;
+    .home-features-section .home-feature { max-width: 100%; }
+
+    .contact-card { padding: var(--space-6) var(--space-4); }
+
+    .social-item img {
+        width: 72px;
+        height: 72px;
     }
+
+    .social-list { gap: var(--space-3); }
 
     .footer {
         flex-direction: column;

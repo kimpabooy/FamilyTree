@@ -186,7 +186,7 @@ export function useCreateFamilyFlow() {
         target: childLocalId,
         type: "parent-child",
         animated: false,
-        style: { stroke: "#6b7280" },
+        style: { stroke: "#3d2202" },
       };
 
       const updatedEdges = [...edgesRef.current, newEdge];

@@ -103,6 +103,18 @@
     --bg-overlay-opacity:       0.88;
 }
 
+.app.dark .home-page,
+.app.dark .about-page,
+.app.dark .contact-page,
+.app.dark .auth-page {
+    background-image:
+        linear-gradient(
+            rgba(31, 20, 15, 0.84),
+            rgba(31, 20, 15, 0.84)
+        ),
+        var(--background-img);
+}
+
 body {
     color: var(--color-text);
 }
@@ -1206,10 +1218,10 @@ body,
         }
     }
 
-    /* .canvas-minimap > * {
+    .canvas-minimap > * {
         max-width: 60px;
         max-height: 60px;
-    } */
+    }
 
     .auth-card { padding: var(--space-8) var(--space-6); }
     .home-features-section .home-feature { max-width: 100%; }
@@ -1240,9 +1252,10 @@ body,
     }
 
     .footer {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        /* border: solid green 2px; */
+        display: flex;
+        align-items: start;
+        text-align: start;
         & div { text-align: center; }
     }
 }

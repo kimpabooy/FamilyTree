@@ -1,4 +1,5 @@
 import "../../App.css";
+import heartiIcon from "../../assets/heart.png";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -7,8 +8,7 @@ export default function Footer() {
       <p className="copyright">
         {" "}
         &copy; {currentYear} FamilyTree - Made with{" "}
-        <img className="heart" src="../src/assets/heart.png" alt="heart" /> by
-        Kim Andersson
+        <img className="heart" src={heartiIcon} alt="heart" /> by Kim Andersson
       </p>
     </footer>
   );

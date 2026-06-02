@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import Button from "../Ui/Button";
+import { isLoggedIn, logout } from "../../services/AuthService";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -13,7 +14,13 @@ export default function Header({
   onDarkModeToggle,
   darkMode,
 }: HeaderProps) {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const loggedIn  = isLoggedIn();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="header">
@@ -39,16 +46,28 @@ export default function Header({
       {/* Höger zon */}
       <div className="header-right">
         <nav className="header-auth-nav">
-          <Button
-            label="Logga in"
-            variant="secondary"
-            onClick={() => navigate("/login")}
-          />
-          <Button
-            label="Skapa konto"
-            variant="primary"
-            onClick={() => navigate("/login")}
-          />
+          {loggedIn ? (
+            /* Inloggad — visa bara "Logga ut" */
+            <Button
+              label="Logga ut"
+              variant="secondary"
+              onClick={handleLogout}
+            />
+          ) : (
+            /* Utloggad — visa "Logga in" + "Skapa konto" */
+            <>
+              <Button
+                label="Logga in"
+                variant="secondary"
+                onClick={() => navigate("/login")}
+              />
+              <Button
+                label="Skapa konto"
+                variant="primary"
+                onClick={() => navigate("/login")}
+              />
+            </>
+          )}
         </nav>
         <button
           className="dark-mode-toggle"

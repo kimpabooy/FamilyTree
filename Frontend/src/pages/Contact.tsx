@@ -7,7 +7,7 @@ export default function Contact() {
   return (
     <div className="contact-page">
       <div className="contact-card">
-          <img className="contact-image" src={picture} alt="QR code for email" />
+        <img className="contact-image" src={picture} alt="Profile picture" />
         <div className="contact-info">
           <h1>Kontakt</h1>
           <p>Ta kontakt med mig!</p>

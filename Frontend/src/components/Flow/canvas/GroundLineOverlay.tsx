@@ -11,9 +11,8 @@ export default function GroundLineOverlay() {
   const width = useStore((s: ReactFlowState) => s.width);
 
   const [tx, ty, zoom] = transform;
-
-  // Y=0 i flow-koordinater → skärmkoordinat
-  const screenY = ty; // ty = translateY = var Y=0 hamnar på skärmen
+  const lineStartX = -tx / zoom;
+  const lineEndX = (width - tx) / zoom;
 
   return (
     <svg
@@ -28,30 +27,32 @@ export default function GroundLineOverlay() {
         overflow: "visible",
       }}
     >
-      <line
-        x1={0}
-        y1={screenY}
-        x2={width}
-        y2={screenY}
-        stroke="#92400e"
-        strokeWidth={2}
-        strokeOpacity={0.55}
-        strokeDasharray="0"
-      />
+      <g transform={`translate(${tx}, ${ty}) scale(${zoom})`}>
+        <line
+          x1={lineStartX}
+          y1={0}
+          x2={lineEndX}
+          y2={0}
+          stroke="#92400e"
+          strokeWidth={8 / zoom}
+          strokeOpacity={0.55}
+          strokeDasharray="0"
+        />
 
-      {/* Etikett */}
-      <text
-        x={width - 8}
-        y={screenY - 6}
-        textAnchor="end"
-        fontSize={10}
-        fill="#92400e"
-        fillOpacity={0.7}
-        letterSpacing="0.08em"
-        style={{ textTransform: "uppercase", userSelect: "none" }}
-      >
-        ▲ LEVANDE &nbsp;&nbsp; ▼ AVLIDNA
-      </text>
+        {/* Etikett */}
+        <text
+          x={lineEndX - 8 / zoom}
+          y={-6 / zoom}
+          textAnchor="end"
+          fontSize={10 / zoom}
+          fill="#92400e"
+          fillOpacity={0.75}
+          letterSpacing="0.08em"
+          style={{ textTransform: "uppercase", userSelect: "none" }}
+        >
+          ▲ LEVANDE &nbsp;&nbsp; ▼ AVLIDNA
+        </text>
+      </g>
     </svg>
   );
 }

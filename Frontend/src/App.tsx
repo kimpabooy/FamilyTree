@@ -6,10 +6,12 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
-import Familytree from "./pages/Familytree.tsx";
+// import Familytree from "./pages/Familytree.tsx";
 import { useState } from "react";
 import CreateFamily from "./pages/CreateFamily.tsx";
 import Login from "./pages/AuthPage.tsx";
+import FamilyTreeEditPage from "./pages/FamilyTreeEditPage.tsx";
+import FamilyTreePage from "./pages/Familytree.tsx";
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -26,11 +28,14 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/familytree" element={<Familytree />} />
+          {/* <Route path="/familytree" element={<Familytree />} /> */}
+          <Route path="/Login" element={<Login />} />
+          <Route path="/familytree" element={<FamilyTreePage />} />
+          <Route path="/familytree/:id" element={<FamilyTreePage />} />
+          <Route path="/familytree/:id/edit" element={<FamilyTreeEditPage />} />
+          <Route path="/familytree/new" element={<CreateFamily />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/familytree/new" element={<CreateFamily />} />
-          <Route path="/Login" element={<Login />} />
         </Routes>
       </main>
       <Footer />

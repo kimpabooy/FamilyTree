@@ -7,7 +7,7 @@
     user-select: none;
 }
 
-/* ─── Design tokens ───────────────────────────────── */
+/* ─── Design ───────────────────────────────── */
 :root {
     --color-light-beige:        #fdf6f0;
     --color-beige:              #f5ede4;
@@ -27,13 +27,22 @@
     --bg-elevated:              var(--color-light-beige);
 
     --font-size-xs:             12px;
+    --font-size-sm:             14px;
+    --font-size-base:           16px;
+    --font-size-md:             18px;
+    --font-size-lg:             20px;
+    --font-size-xl:             24px;
+    --font-size-2xl:            28px;
+    --font-size-3xl:            32px;
+    --font-size-4xl:            36px;
+    /* --font-size-xs:             12px;
     --font-size-sm:             13px;
     --font-size-base:           14px;
     --font-size-md:             16px;
     --font-size-lg:             18px;
-    --font-size-xl:             22px;
-    --font-size-2xl:            1.5rem;
-    --font-size-3xl:            1.6rem;
+    --font-size-xl:             22px; */
+    /* --font-size-2xl:            1.5rem;
+    --font-size-3xl:            1.6rem; */
     --font-weight-normal:       400;
     --font-weight-medium:       500;
     --font-weight-semibold:     600;
@@ -71,8 +80,6 @@
     --auth-card-max-width:      420px;
     --create-card-max-width:    440px;
     --dialog-max-width:         360px;
-    
-    /* Max-bredd specifikt för sidinnehåll */
     --content-max-width:        860px;
 
     --background-img:           url('../src/assets/background-tree.Webp');
@@ -105,6 +112,30 @@ body,
 #root {
     min-height: 100%;
 }
+
+/* ─── Animations ───────────────────────────────────── */
+@keyframes animate-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animate-pulsate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes animate-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 
 /* ─── App-layout ──────────────────────────────────── */
 .app {
@@ -192,7 +223,7 @@ body,
     font-size: 1rem;
     padding: var(--space-1) var(--space-2);
     transition: scale var(--transition-base);
-
+    
     &:hover { scale: 1.05; }
 }
 
@@ -209,19 +240,19 @@ body,
     overflow-y: auto;
 
     & img { align-self: center; }
-
+    
     & h2 {
         font-size: var(--font-size-md);
         color: var(--color-accent);
         text-align: center;
     }
-
+    
     & ul {
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
     }
-
+    
     & li a {
         display: block;
         padding: var(--space-2) 0.75rem;
@@ -229,7 +260,7 @@ body,
         color: var(--color-text);
         font-size: 0.95rem;
         transition: background var(--transition-base);
-
+        
         &:hover {
             background-color: var(--color-border);
             color: var(--color-accent);
@@ -244,7 +275,7 @@ body,
     margin-top: auto;
     padding-top: var(--space-4);
     border-top: var(--border);
-
+    
     & .btn {
         width: 100%;
         text-align: center;
@@ -258,25 +289,33 @@ body,
     background-color: var(--bg-page);
     overflow-y: auto;
     min-height: 0;
-    -webkit-overflow-scrolling: touch;
+    /* -webkit-overflow-scrolling: touch; */
 }
 
-/* ─── Generella sidor ─────────────────────────────── */
-/*
-  Bakgrundsbilden täcker hela sidan via gradient-teknik.
-  Innehållet centreras med max-width + margin: auto på sektionerna —
-  ingen margin-right-hack behövs, fungerar på alla skärmstorlekar.
-*/
-.auth-page,
+/* ─── Delad bakgrundsbild (alla sidor med bg) ─────── */
 .home-page,
 .about-page,
-.contact-page {
+.contact-page,
+.auth-page {
+
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 2rem;
+    gap: 1rem;
+    padding-right: var(--sidebar-width);
+    padding-top: var(--space-8);
+    /* padding: var(--space-5) var(--space-10); */
     min-height: 100%;
+
+    & h1 {
+        font-size: var(--font-size-2xl);
+        color: var(--color-accent);
+    }
+
+    & p {
+        font-size: 1rem;
+        color: var(--color-text);
+    }
 
     background-image:
         linear-gradient(
@@ -287,6 +326,19 @@ body,
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+/* ─── Innehållssidor (home / about / contact) ─────── */
+
+/*
+.home-page,
+.about-page,
+.contact-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 100%;
 
     & h1 {
         font-size: var(--font-size-2xl);
@@ -298,6 +350,8 @@ body,
         color: var(--color-text);
     }
 }
+
+*/
 
 /* Centrera innehållssektioner inuti main-content */
 .home-hero-section,
@@ -325,11 +379,18 @@ body,
         align-items: center;
         gap: var(--space-2);
     }
-
+    
     & p {
+        font-size: var(--font-size-lg);
+        color: var(--color-text);
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    /* & p {
         max-width: 600px;
         line-height: 1.6;
-    }
+    } */
 }
 
 .home-features-section {
@@ -341,8 +402,13 @@ body,
     padding: var(--space-8) var(--space-4);
 
     & h2 {
-        font-size: var(--font-size-xl);
+        /* font-size: var(--font-size-xl); */
         color: var(--color-accent);
+        width: 400px;
+        /* border: solid red 1px; */
+        display: flex;
+        align-items: center;
+        /* gap: var(--space-2); */
     }
 
     & .home-features-container {
@@ -351,7 +417,7 @@ body,
         flex-wrap: wrap;
         justify-content: center;
     }
-
+    
     & .home-feature {
         background: var(--bg-elevated);
         border: var(--border);
@@ -368,13 +434,24 @@ body,
     }
 }
 
-/* ─── About ────────────────────────────────────────── */
+.rotating-text {
+    display: inline-block;
+    position: relative;
+    /* border: solid red 5px; */
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    animation: fadeInUp 0.4s ease;
+}
+
+/* ─── About ───────────────────────────────────────── */
 .about-page {
     & h1, h2 {
         font-size: var(--font-size-xl);
         color: var(--color-accent);
         text-align: center;
     }
+    
     & p {
         font-size: var(--font-size-lg);
         color: var(--color-text);
@@ -382,12 +459,13 @@ body,
         text-align: center;
     }
 }
+
 .about-content {
     background: var(--bg-elevated);
     border: var(--border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
-    max-width: 700px;
+    /* max-width: 700px; */
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -399,69 +477,130 @@ body,
     }
 }
 
-/* ─── Contact ────────────────────────────────────────── */
+/* ─── Contact ─────────────────────────────────────── */
+.contact-page {
+    align-items: center;
+    justify-content: center;
+}
+
 .contact-card {
     background: var(--bg-elevated);
-    border: var(--border);
+    border: solid var(--color-border) 5px;
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    box-shadow: var(--shadow-sm);
-    max-width: 720px;
-    margin: var(--space-6) auto 0;
+    padding: var(--space-10) var(--space-12);
+    box-shadow: 0 0 0 1px var(--color-border), var(--shadow-panel);
+    max-width: 540px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    box-shadow: 0 0 10px 0 var(--color-border), var(--shadow-panel);
+}
+
+.contact-card > h1 {
+    font-size: var(--font-size-2xl);
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.contact-image {
+    display: block;
+    position: relative;
+    box-shadow: 0 0 50px 0 var(--color-border), var(--shadow-panel);
+    width: 140px;
+    height: 180px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    align-self: center;
+}
+
+.contact-card > p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    margin: calc(-1 * var(--space-4)) 0 0;
 }
 
 .contact-card h2 {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-accent);
-    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: var(--border);
+    margin-bottom: var(--space-1);
 }
 
+.contact-card > p:not(:first-of-type),
 .contact-card p {
     color: var(--color-text);
-    line-height: 1.5;
-    margin-bottom: var(--space-3);
+    line-height: 1.7;
+    font-size: var(--font-size-base);
 }
 
+.contact-card p a {
+    color: var(--color-accent);
+    &:hover { color: var(--color-accent-hover); }
+}
+
+/* ─── Sociala medier ──────────────────────────────── */
 .contact-social {
-    margin-top: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
 }
 
 .social-list {
     display: flex;
-    width: max-content;
     gap: var(--space-4);
-    align-items: center;
     flex-wrap: wrap;
 }
 
 .social-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-2);
-    background: transparent;
-    padding: 6px 8px;
-    border-radius: var(--radius-md);
-}
+    gap: var(--space-3);
+    background: var(--bg-surface);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    flex: 1;
+    min-width: 120px;
+    transition: box-shadow var(--transition-base), border-color var(--transition-base);
 
-.social-item a {
+    & a {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-accent);
-    font-weight: var(--font-weight-medium);
-}
+    letter-spacing: 0.02em;
+    transition: color var(--transition-fast);
 
-.social-item img {
-    width: 44px;
-    height: 44px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid rgba(0,0,0,0.06);
+    &:hover { color: var(--color-accent-hover); }
+    }
+
+    & img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
     background: #fff;
-}
+    display: block;
+    }
 
-@media (max-width: 480px) {
-    .social-item img { width: 36px; height: 36px; }
-    .contact-card { padding: var(--space-4); }
+    &:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: var(--color-dark-beige);
+        transform: translateY(-2px);
+    }
 }
-
 
 /* ─── Delade formulär-inputs ──────────────────────── */
 .flow-input {
@@ -567,11 +706,61 @@ body,
     padding: var(--space-3) var(--space-4);
     border-bottom: var(--border);
     flex-shrink: 0;
+    gap: var(--space-4);
+    display: flex;
+
+    & input {
+        flex: 1;
+        max-width: 300px;
+        border: var(--border);
+        border-radius: var(--radius-md);
+        border-color: var(--color-border);
+        padding: var(--space-2) var(--space-3);
+    }
 }
 
 .familytree-page-canvas {
     flex: 1;
     min-height: 0;
+}
+
+.familytree-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    text-align: center;
+}
+
+.familytree-empty-text {
+    font-size: var(--font-size-md);
+    color: var(--color-text-muted);
+    max-width: 400px;
+    line-height: 1.6;
+}
+
+/* Sökfält i toolbar */
+.familytree-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+
+    & input {
+        width: 140px;
+        padding: var(--space-2) var(--space-3);
+        border: var(--border);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-base);
+        background: var(--bg-elevated);
+        color: var(--color-text);
+        outline: none;
+
+        &:focus { border-color: var(--color-accent); }
+    }
 }
 
 /* ─── Skapa familjeträd – wizard ──────────────────── */
@@ -656,6 +845,32 @@ body,
     color: var(--color-text-muted);
 }
 
+.create-flow-sidebar-field-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    margin: var(--space-2) 0 var(--space-1);
+}
+
+.create-flow-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    margin: var(--space-3) 0 var(--space-1);
+    cursor: pointer;
+    user-select: none;
+
+    & input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--color-accent);
+        cursor: pointer;
+    }
+}
+
 .create-flow-sidebar-hint {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
@@ -681,7 +896,87 @@ body,
     min-height: 0;
 }
 
+.canvas-minimap > * {
+    border: var(--border);
+    border-radius: var(--radius-md);
+    border-radius: 4px;
+    width: 85px;
+    height: 85px;
+    &:hover {
+        transform: scale(2) translate(-15px, -15px);
+    }
+}
+
+/* Edit-sidopanel (öppnas när man klickar en nod i edit-läge) */
+.edit-panel {
+    width: 280px;
+    min-width: 280px;
+    background: var(--bg-surface);
+    border-left: var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+ 
+.edit-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border-bottom: var(--border);
+}
+ 
+.edit-panel-heading {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin: 0;
+}
+ 
+.edit-panel-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0 var(--space-1);
+ 
+    &:hover { color: var(--color-text); }
+}
+ 
+.edit-panel-body {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    flex: 1;
+}
+ 
+.edit-panel-field-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-top: var(--space-3);
+}
+ 
+.edit-panel-field-value {
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+}
+ 
+.edit-panel-actions {
+    padding: var(--space-4);
+    border-top: var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
 /* ─── Auth-sida ───────────────────────────────────── */
+/* Bakgrundsbilden ärvs från den delade regeln ovanför */
 .auth-page {
     display: flex;
     align-items: center;
@@ -850,6 +1145,23 @@ body,
     .app {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr auto;
+        scroll-behavior: smooth;
+    }
+
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .home-page,
+    .about-page,
+    .contact-page,
+    .auth-page {
+        width: 100dvw;
+        height: 100dvh;
+        padding: var(--space-5) var(--space-4);
+        overflow: hidden;
     }
 
     .header-auth-nav { display: none; }
@@ -880,12 +1192,47 @@ body,
 
     .side-panel-overlay.open { display: block; }
 
-    .main-content { grid-column: 1; }
+    .main-content { grid-column: 1;}
+
+    .familytree-page-toolbar {
+        justify-content: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+
+        & input {
+            max-width: none;
+            width: 100%;
+        }
+    }
+
+    /* .canvas-minimap > * {
+        max-width: 60px;
+        max-height: 60px;
+    } */
 
     .auth-card { padding: var(--space-8) var(--space-6); }
+    .home-features-section .home-feature { max-width: 100%; }
+    .contact-card { padding: var(--space-6) var(--space-4); }
+    .social-list { gap: var(--space-3); }
 
-    .home-features-section .home-feature {
-        max-width: 100%;
+    .home-features-section h2 {
+        min-width: 400px;
+        margin: 0 auto 0 var(--space-2);
+        justify-content: start;
+    }
+    .rotating-text {
+        display: inline-block;
+        position: flex;
+        color: var(--color-accent);
+        font-weight: bold;
+        /* transition: opacity 1s ease, transform 1s ease-in-out; */
+        /* animation: animate-fadeInUp 3s infinite; */
+    }
+
+    .social-item img {
+        width: 72px;
+        height: 72px;
     }
 
     .footer {

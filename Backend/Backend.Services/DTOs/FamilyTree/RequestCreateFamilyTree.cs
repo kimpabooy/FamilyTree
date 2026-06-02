@@ -10,6 +10,6 @@ namespace Backend.Services.DTOs.FamilyTree
     {
         public string Name { get; set; }
         public bool IsPublic { get; set; }
-        public string OwnerId { get; set; }
+        //public string OwnerId { get; set; }
     }
 }

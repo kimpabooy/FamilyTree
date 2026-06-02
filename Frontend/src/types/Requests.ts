@@ -3,7 +3,6 @@ import { Gender, PartnerType } from "./Enums";
 export interface CreateFamilyTreeRequest {
   name: string;
   isPublic: boolean;
-  ownerId: string;
 }
 
 export interface UpdateFamilyTreeRequest {

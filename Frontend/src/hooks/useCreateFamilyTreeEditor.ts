@@ -18,6 +18,8 @@ interface LocalPerson {
   firstName: string;
   lastName: string;
   gender: Gender;
+  birthDate: string | null;
+  deathDate: string | null;
 }
 
 type RelationType = "parent-child" | "partner";
@@ -28,11 +30,15 @@ interface LocalRelation {
   type: RelationType;
 }
 
-interface AddPersonInput {
+export interface AddPersonInput {
   firstName: string;
   lastName: string;
   gender: Gender;
+  birthDate: string | null;
+  deathDate: string | null;
 }
+
+// ── Layout ───────────────────────────────────────────────────────────────────
 
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const graph = new dagre.graphlib.Graph();
@@ -61,26 +67,64 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   });
 }
 
+// ── Node-builder ─────────────────────────────────────────────────────────────
+
 function buildNode(person: LocalPerson): Node {
+  const isDeceased = person.deathDate !== null;
+
+  const bgColor = isDeceased
+    ? person.gender === 0
+      ? "#e0e7ef"
+      : person.gender === 1
+        ? "#ede0e7"
+        : "#e5e7eb"
+    : person.gender === 0
+      ? "#dbeafe"
+      : person.gender === 1
+        ? "#fce7f3"
+        : "#f3f4f6";
+
+  const years = [
+    person.birthDate ? new Date(person.birthDate).getFullYear() : null,
+    person.deathDate ? new Date(person.deathDate).getFullYear() : null,
+  ]
+    .filter(Boolean)
+    .join(" – ");
+
   return {
     id: person.localId,
+    // Använd samma nodtyper som FamilyTreeCanvas känner igen
+    type: isDeceased ? "deceased" : "person",
     position: { x: 0, y: 0 },
-    data: { label: `${person.firstName} ${person.lastName}` },
+    data: {
+      person: {
+        id: 0, // lokal — ersätts av backend-id vid sparning
+        firstName: person.firstName,
+        lastName: person.lastName,
+        gender: person.gender,
+        birthDate: person.birthDate,
+        deathDate: person.deathDate,
+        profileImageUrl: null,
+        familyTreeId: 0,
+        createdDate: "",
+        updatedDate: null,
+      },
+      // Fallback-label om PersonNode inte hanterar data.person
+      label: `${person.firstName} ${person.lastName}${years ? `\n${years}` : ""}`,
+    },
     style: {
       width: NODE_WIDTH,
-      background:
-        person.gender === 0
-          ? "#dbeafe"
-          : person.gender === 1
-            ? "#fce7f3"
-            : "#f3f4f6",
+      background: bgColor,
       border: "1px solid #d1d5db",
       borderRadius: 8,
       fontSize: 13,
       padding: "8px 12px",
+      opacity: isDeceased ? 0.85 : 1,
     },
   };
 }
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCreateFamilyFlow() {
   const [step, setStep] = useState<1 | 2>(1);
@@ -92,10 +136,8 @@ export function useCreateFamilyFlow() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Ref för att läsa senaste edges synkront utan att trigga extra renders
   const edgesRef = useRef<Edge[]>([]);
 
-  // Håll ref i sync med state
   const setEdgesAndRef = useCallback(
     (updater: Edge[] | ((prev: Edge[]) => Edge[])) => {
       setEdges((prev) => {
@@ -111,21 +153,17 @@ export function useCreateFamilyFlow() {
     if (treeName.trim()) setStep(2);
   }, [treeName]);
 
-  // ── Lägg till person ────────────────────────────────────────────────────────
-  // Läser edges via ref — inga nästlade state-uppdateringar, inga race conditions.
   const addPerson = useCallback((input: AddPersonInput) => {
     const localId = `local-${Date.now()}`;
     const person: LocalPerson = { localId, ...input };
 
     setPersons((prev) => [...prev, person]);
-
     setNodes((prevNodes) => {
       const newNodes = [...prevNodes, buildNode(person)];
       return applyDagreLayout(newNodes, edgesRef.current);
     });
   }, []);
 
-  // ── Förälder → barn ─────────────────────────────────────────────────────────
   const connectPersons = useCallback(
     (parentLocalId: string, childLocalId: string) => {
       setRelations((prev) => {
@@ -148,7 +186,7 @@ export function useCreateFamilyFlow() {
         target: childLocalId,
         type: "parent-child",
         animated: false,
-        style: { stroke: "#6b7280" },
+        style: { stroke: "#3d2202" },
       };
 
       const updatedEdges = [...edgesRef.current, newEdge];
@@ -158,7 +196,6 @@ export function useCreateFamilyFlow() {
     [setEdgesAndRef],
   );
 
-  // ── Partner ─────────────────────────────────────────────────────────────────
   const connectPartners = useCallback(
     (person1LocalId: string, person2LocalId: string) => {
       setRelations((prev) => {
@@ -192,22 +229,16 @@ export function useCreateFamilyFlow() {
         label: "Partner",
       };
 
-      // Partner-kanter påverkar inte dagre-layouten
       setEdgesAndRef([...edgesRef.current, newEdge]);
     },
     [setEdgesAndRef],
   );
 
-  // ── Spara allt till backend ─────────────────────────────────────────────────
   const saveAll = useCallback(async (): Promise<number | null> => {
     setSaving(true);
     setError(null);
     try {
-      const tree = await createFamilyTree({
-        name: treeName,
-        isPublic: false,
-        ownerId: "",
-      });
+      const tree = await createFamilyTree({ name: treeName, isPublic: false });
 
       const idMap = new Map<string, number>();
       for (const p of persons) {
@@ -216,8 +247,8 @@ export function useCreateFamilyFlow() {
           lastName: p.lastName,
           gender: p.gender,
           familyTreeId: tree.id,
-          birthDate: null,
-          deathDate: null,
+          birthDate: p.birthDate,
+          deathDate: p.deathDate,
           profileImageUrl: null,
         });
         idMap.set(p.localId, created.id);
@@ -231,12 +262,12 @@ export function useCreateFamilyFlow() {
         if (relation.type === "parent-child") {
           await createParentChildRelation({ parentId: id1, childId: id2 });
         } else if (relation.type === "partner") {
-          const partnerRequest: CreatePartnerRelationRequest = {
+          const req: CreatePartnerRelationRequest = {
             person1Id: id1,
             person2Id: id2,
             partnerType: 0,
           };
-          await createPartnerRelation(partnerRequest);
+          await createPartnerRelation(req);
         }
       }
 

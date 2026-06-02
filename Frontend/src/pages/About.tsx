@@ -1,7 +1,7 @@
 export default function About() {
   return (
     <div className="about-page">
-      <h1>About</h1>
+      <h1>Om sidan</h1>
 
       <p>
         Detta är en webbplats skapad för att dokumentera, utforska och bevara

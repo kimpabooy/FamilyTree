@@ -1,9 +1,14 @@
-import CreateFamilyFlow from "../components/Flow/CreateFamilyFlow";
+import CreateFamilyFlow from "../components/Flow/workflows/CreateFamilyTreeEditor";
 import Button from "../components/Ui/Button";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { isLoggedIn } from "../services/AuthService";
 
 export default function CreateFamily() {
   const navigate = useNavigate();
+
+  if (!isLoggedIn()) {
+    return <Navigate to="/Login" replace />;
+  }
 
   return (
     <div className="create-family-page">

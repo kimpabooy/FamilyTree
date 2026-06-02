@@ -1,22 +1,25 @@
 import qrLinkedIn from "../assets/qr-linkedin-icon.png";
 import qrGitHub from "../assets/qr-github-icon.png";
+import qrInstagram from "../assets/qr-instagram-icon.png";
+import picture from "../assets/picture.jpg";
 
 export default function Contact() {
   return (
     <div className="contact-page">
-      <h1>Contact</h1>
-      <p>Get in touch with me!</p>
-
       <div className="contact-card">
-        <h2>Kontakt</h2>
-        <p>
-          <b>Namn:</b> Kim Andersson <br />
-          <b>Adress:</b> Storgatan 51, 311 31 Falkenberg <br />
-          <b>Email:</b>{" "}
-          <a href="mailto:kim.andersson.dev@gmail.com">
-            kim.andersson.dev@gmail.com
-          </a>
-        </p>
+          <img className="contact-image" src={picture} alt="QR code for email" />
+        <div className="contact-info">
+          <h1>Kontakt</h1>
+          <p>Ta kontakt med mig!</p>
+          <p>
+            <b>Namn:</b> Kim Andersson <br />
+            <b>Adress:</b> Storgatan 51, 311 31 Falkenberg <br />
+            <b>Email:</b>{" "}
+            <a href="mailto:kim.andersson.dev@gmail.com">
+              kim.andersson.dev@gmail.com
+            </a>
+          </p>
+        </div>
 
         <div className="contact-social">
           <h2>Sociala medier</h2>
@@ -42,6 +45,16 @@ export default function Contact() {
                 GitHub
               </a>
               <img src={qrGitHub} alt="QR code for GitHub" />
+            </div>
+            <div className="social-item">
+              <a
+                href="https://www.instagram.com/kimpabooy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Instagram
+              </a>
+              <img src={qrInstagram} alt="QR code for Instagram" />
             </div>
           </div>
         </div>

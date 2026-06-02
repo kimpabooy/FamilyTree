@@ -1,4 +1,30 @@
+import { useEffect, useState } from "react";
+
+const ROTATING_WORDS = [
+  "historien lever vidare",
+  "minnen bevaras",
+  "släkten samlas",
+  "berättelser delas",
+  "generationer möts",
+];
+
 export default function Home() {
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Fade out → byt ord → fade in
+      setVisible(false);
+      setTimeout(() => {
+        setIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+        setVisible(true);
+      }, 400);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="home-page">
       <section className="home-hero-section">
@@ -13,18 +39,36 @@ export default function Home() {
       </section>
 
       <section className="home-features-section">
-        <h2>Vad du kan göra?</h2>
+        <h2>
+          {/* "&nbsp" ger blanksteg */}
+          En plats där&nbsp;
+          <span
+            className="rotating-text"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : "translateY(6px)",
+              transition: "opacity 0.3s ease, transform 0.3s ease",
+            }}
+          >
+            {ROTATING_WORDS[index]}
+          </span>
+        </h2>
+
         <div className="home-features-container">
           <div className="home-feature">
             <h3>Bygg ditt träd</h3>
-            <p>Lägg till familjemedlemmar och relationer enkelt i det interaktiva trädet.</p>
+            <p>
+              Lägg till familjemedlemmar och relationer enkelt i det interaktiva
+              trädet.
+            </p>
           </div>
-
           <div className="home-feature">
             <h3>Säkra historien</h3>
-            <p>Se till att dina familjehistorier sparas säkert för framtida generationer.</p>
+            <p>
+              Se till att dina familjehistorier sparas säkert för framtida
+              generationer.
+            </p>
           </div>
-
           <div className="home-feature">
             <h3>Dela och upptäck</h3>
             <p>Utforska dina släktband och samarbeta med familjen.</p>

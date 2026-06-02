@@ -28,7 +28,6 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* <Route path="/familytree" element={<Familytree />} /> */}
           <Route path="/Login" element={<Login />} />
           <Route path="/familytree" element={<FamilyTreePage />} />
           <Route path="/familytree/:id" element={<FamilyTreePage />} />

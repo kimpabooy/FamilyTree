@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import FamilyTreeEditView from "../components/Flow/views/FamilyTreeEditView";
 import Button from "../components/Ui/Button";
-import type { Gender } from "../types/Enums";
 
 export default function FamilyTreeEditPage() {
   const navigate = useNavigate();

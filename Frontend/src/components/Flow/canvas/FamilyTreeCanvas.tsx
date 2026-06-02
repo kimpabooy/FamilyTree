@@ -13,32 +13,30 @@ import {
 } from "@xyflow/react";
 import PersonNode from "../nodes/PersonNode";
 import DeceasedPersonNode from "../nodes/DeceasedPersonNode";
-import GroundNode from "../nodes/GroundNode";
 import RelationEdge from "../edges/FamilyRelationEdge";
+import GroundLineOverlay from "./GroundLineOverlay";
 
 /*
   Nodtyper:
     "person"   — levande person (ovan mark)
     "deceased" — avliden person (under mark)
-    "ground"   — marklinjen, osynlig separator
   Kantyper:
-    "family"   — förälder-barn (visas som RelationEdge)
-    "partner"  — partnerrelation (visas som RelationEdge men streckad)
+    "family"       — förälder-barn, Bezier-kurva
+    "partner"      — partnerrelation, streckad Bezier-kurva
+    "cross-ground" — korsar marklinjen, rak linje
 */
 
-// ── Node- och kantdefinitioner ───────────────────────────────────────────────
 const nodeTypes: NodeTypes = {
   person: PersonNode,
   deceased: DeceasedPersonNode,
-  ground: GroundNode,
 };
 
 const edgeTypes = {
   family: RelationEdge,
   partner: RelationEdge,
+  "cross-ground": RelationEdge,
 };
 
-// ── Canvas-komponenten ───────────────────────────────────────────────────────
 interface FamilyTreeCanvasProps {
   nodes: Node[];
   edges: Edge[];
@@ -46,10 +44,12 @@ interface FamilyTreeCanvasProps {
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
   onEdgesDelete: (edges: { id: string }[]) => void;
+  /** Read-only-läge — inaktiverar all interaktion utom kamera-pan/zoom */
+  readOnly?: boolean;
+  /** Callback när en person-nod klickas (används i edit-läge) */
+  onNodeClick?: (nodeId: string) => void;
 }
 
-// FamilyTreeCanvas — wrapper för ReactFlow som sätter upp nod- och kanttyper
-// och hanterar callbacks. Själva layouten och datan hanteras av hooken useFamilyTreeView.
 export default function FamilyTreeCanvas({
   nodes,
   edges,
@@ -57,6 +57,8 @@ export default function FamilyTreeCanvas({
   onEdgesChange,
   onConnect,
   onEdgesDelete,
+  readOnly = false,
+  onNodeClick,
 }: FamilyTreeCanvasProps) {
   return (
     <div style={{ width: "100%", height: "100%", touchAction: "none" }}>
@@ -67,14 +69,22 @@ export default function FamilyTreeCanvas({
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onEdgesDelete={onEdgesDelete}
-        onConnect={onConnect}
+        onEdgesDelete={readOnly ? undefined : onEdgesDelete}
+        onConnect={readOnly ? undefined : onConnect}
+        onNodeClick={
+          onNodeClick ? (_event, node) => onNodeClick(node.id) : undefined
+        }
+        // Read-only: stäng av all interaktion utom kamera
+        nodesDraggable={!readOnly}
+        nodesConnectable={!readOnly}
+        edgesReconnectable={!readOnly}
+        elementsSelectable={!readOnly}
         fitView
         fitViewOptions={{ padding: 0.2 }}
       >
-        <Controls />
+        <GroundLineOverlay />
+        <Controls showInteractive={!readOnly} />
         <MiniMap
-          className="canvas-minimap"
           nodeColor={(n) => {
             if (n.type === "person") return "#93c5fd";
             if (n.type === "deceased") return "#94a3b8";

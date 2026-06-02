@@ -1158,10 +1158,10 @@ body,
     .about-page,
     .contact-page,
     .auth-page {
-        width: 100dvw;
-        height: 100dvh;
+        width: 100%;
+        min-height: 100%;
         padding: var(--space-5) var(--space-4);
-        overflow: hidden;
+        overflow-x: hidden;
     }
 
     .header-auth-nav { display: none; }
@@ -1217,15 +1217,19 @@ body,
     .social-list { gap: var(--space-3); }
 
     .home-features-section h2 {
-        min-width: 400px;
+        /* border: solid red 10px; */
+        max-width: 400px;
+        font-size: var(--font-size-lg);
         margin: 0 auto 0 var(--space-2);
-        justify-content: start;
+        font-weight: 100;
+        letter-spacing: -0.05em;
     }
     .rotating-text {
         display: inline-block;
-        position: flex;
+        position: relative;
         color: var(--color-accent);
         font-weight: bold;
+        max-width: fit-content;
         /* transition: opacity 1s ease, transform 1s ease-in-out; */
         /* animation: animate-fadeInUp 3s infinite; */
     }

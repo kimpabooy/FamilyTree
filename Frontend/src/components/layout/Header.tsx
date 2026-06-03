@@ -39,8 +39,8 @@ export default function Header({
 
       {/* Mitten zon — alltid centrerad */}
       <Link to="/" className="header-logo-link">
-        <img src={logo} alt="Family Tree Logo" />
-        <h1>Family Tree</h1>
+        <img src={logo} alt="Familjearkivet Logo" />
+        <h1>Familjearkivet</h1>
       </Link>
 
       {/* Höger zon */}

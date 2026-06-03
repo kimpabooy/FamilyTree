@@ -80,6 +80,20 @@ function PersonFormFields({
         Avliden
       </label>
 
+      <label className="edit-panel-field-label">
+        Ladda upp bild
+        <button className="flow-btn flow-btn--ghost" disabled>
+          Kommer snart
+        </button>
+      </label>
+
+      <label className="edit-panel-field-label">
+        Ladda upp dokument
+        <button className="flow-btn flow-btn--ghost" disabled>
+          Kommer snart
+        </button>
+      </label>
+
       {watchIsDeceased && (
         <>
           <label className="edit-panel-field-label">Dödsdatum</label>

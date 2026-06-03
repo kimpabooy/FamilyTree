@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
 const ROTATING_WORDS = [
-  "historien lever vidare",
-  "minnen bevaras",
-  "släkten samlas",
-  "berättelser delas",
-  "generationer möts",
+  "Minnen bevaras",
+  "Släkten samlas",
+  "Berättelser delas",
+  "Generationer möts",
 ];
 
 export default function Home() {
@@ -28,7 +27,7 @@ export default function Home() {
   return (
     <div className="home-page">
       <section className="home-hero-section">
-        <h1>Family Tree</h1>
+        <h1>Familjearkivet</h1>
         <p>
           Bygg ditt släktträd och upptäck historierna som format din familj
           genom generationer. Utforska människorna, platserna och minnena som
@@ -42,17 +41,17 @@ export default function Home() {
         <h2>
           {/* "&nbsp" ger blanksteg */}
           En plats där&nbsp;
-          <span
-            className="rotating-text"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(6px)",
-              transition: "opacity 0.3s ease, transform 0.3s ease",
-            }}
-          >
-            {ROTATING_WORDS[index]}
-          </span>
         </h2>
+        <span
+          className="rotating-text"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+          }}
+        >
+          {ROTATING_WORDS[index]}
+        </span>
 
         <div className="home-features-container">
           <div className="home-feature">

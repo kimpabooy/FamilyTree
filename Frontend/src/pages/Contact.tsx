@@ -10,7 +10,6 @@ export default function Contact() {
         <img className="contact-image" src={picture} alt="Profile picture" />
         <div className="contact-info">
           <h1>Kontakt</h1>
-          <p>Ta kontakt med mig!</p>
           <p>
             <b>Namn:</b> Kim Andersson <br />
             <b>Adress:</b> Storgatan 51, 311 31 Falkenberg <br />

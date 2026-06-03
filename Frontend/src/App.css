@@ -7,7 +7,7 @@
     user-select: none;
 }
 
-/* ─── Design ───────────────────────────────── */
+/* ─── Design tokens ───────────────────────────────── */
 :root {
     --color-light-beige:        #fdf6f0;
     --color-beige:              #f5ede4;
@@ -35,14 +35,6 @@
     --font-size-2xl:            28px;
     --font-size-3xl:            32px;
     --font-size-4xl:            36px;
-    /* --font-size-xs:             12px;
-    --font-size-sm:             13px;
-    --font-size-base:           14px;
-    --font-size-md:             16px;
-    --font-size-lg:             18px;
-    --font-size-xl:             22px; */
-    /* --font-size-2xl:            1.5rem;
-    --font-size-3xl:            1.6rem; */
     --font-weight-normal:       400;
     --font-weight-medium:       500;
     --font-weight-semibold:     600;
@@ -83,6 +75,7 @@
     --content-max-width:        860px;
 
     --background-img:           url('../src/assets/background-tree.Webp');
+    --bg-overlay-color:         253, 246, 240;
     --bg-overlay-opacity:       0.82;
 }
 
@@ -100,41 +93,42 @@
     --bg-page:                  #2c1f18;
     --bg-surface:               #3e2820;
     --bg-elevated:              #2c1f18;
+    --bg-overlay-color:         44, 31, 24;
     --bg-overlay-opacity:       0.88;
 }
 
 body {
     color: var(--color-text);
+    /* Förhindra horisontellt scroll globalt */
+    overflow-x: hidden;
+}
+
+
+/* ─── Animationer ─────────────────────────────────── */
+@keyframes animate-fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes animate-pulsate {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes animate-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 html,
 body,
 #root {
     min-height: 100%;
+    max-width: 100%;
 }
 
-/* ─── Animations ───────────────────────────────────── */
-@keyframes animate-fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes animate-pulsate {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-@keyframes animate-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+/* in dark mode */
 
 
 /* ─── App-layout ──────────────────────────────────── */
@@ -143,6 +137,8 @@ body,
     grid-template-columns: minmax(var(--sidebar-min), var(--sidebar-width)) 1fr;
     grid-template-rows: auto 1fr auto;
     min-height: 100dvh;
+    /* Förhindra att barn-element orsakar horisontellt scroll */
+    /* overflow-x: hidden; */
 }
 
 /* ─── Header ─────────────────────────────────────── */
@@ -154,7 +150,6 @@ body,
     align-items: center;
     background-color: var(--bg-surface);
     padding: 0.75rem 1.5rem;
-    border-bottom: var(--border);
 }
 
 .header-left {
@@ -170,10 +165,7 @@ body,
     gap: var(--space-2);
     color: inherit;
 
-    & img {
-        height: 28px;
-        width: auto;
-    }
+    & img { height: 28px; width: auto; }
 
     & h1 {
         font-size: var(--font-size-3xl);
@@ -223,7 +215,6 @@ body,
     font-size: 1rem;
     padding: var(--space-1) var(--space-2);
     transition: scale var(--transition-base);
-    
     &:hover { scale: 1.05; }
 }
 
@@ -233,26 +224,25 @@ body,
     grid-row: 2;
     background-color: var(--bg-surface);
     padding: 1rem;
-    border-right: var(--border);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     overflow-y: auto;
 
     & img { align-self: center; }
-    
+
     & h2 {
         font-size: var(--font-size-md);
         color: var(--color-accent);
         text-align: center;
     }
-    
+
     & ul {
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
     }
-    
+
     & li a {
         display: block;
         padding: var(--space-2) 0.75rem;
@@ -260,7 +250,7 @@ body,
         color: var(--color-text);
         font-size: 0.95rem;
         transition: background var(--transition-base);
-        
+
         &:hover {
             background-color: var(--color-border);
             color: var(--color-accent);
@@ -275,7 +265,7 @@ body,
     margin-top: auto;
     padding-top: var(--space-4);
     border-top: var(--border);
-    
+
     & .btn {
         width: 100%;
         text-align: center;
@@ -288,57 +278,37 @@ body,
     grid-row: 2;
     background-color: var(--bg-page);
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 0;
-    /* -webkit-overflow-scrolling: touch; */
 }
 
-/* ─── Delad bakgrundsbild (alla sidor med bg) ─────── */
+/* ─── Delad bakgrundsbild + sidopanel-kompensation ── */
+/*
+  padding-right: var(--sidebar-width) kompenserar för att sidopanelen
+  tar upp kolumn 1 men headern sträcker sig över hela bredden.
+  Detta gör att innehållet upplevs centrerat relativt hela fönstret.
+*/
 .home-page,
 .about-page,
 .contact-page,
 .auth-page {
-
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding-right: var(--sidebar-width);
     padding-top: var(--space-8);
-    /* padding: var(--space-5) var(--space-10); */
+    padding-right: var(--sidebar-width);
     min-height: 100%;
-
-    & h1 {
-        font-size: var(--font-size-2xl);
-        color: var(--color-accent);
-    }
-
-    & p {
-        font-size: 1rem;
-        color: var(--color-text);
-    }
 
     background-image:
         linear-gradient(
-            rgba(253, 246, 240, var(--bg-overlay-opacity)),
-            rgba(253, 246, 240, var(--bg-overlay-opacity))
+            rgba(var(--bg-overlay-color), var(--bg-overlay-opacity)),
+            rgba(var(--bg-overlay-color), var(--bg-overlay-opacity))
         ),
         var(--background-img);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-/* ─── Innehållssidor (home / about / contact) ─────── */
-
-/*
-.home-page,
-.about-page,
-.contact-page {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    min-height: 100%;
 
     & h1 {
         font-size: var(--font-size-2xl);
@@ -351,9 +321,7 @@ body,
     }
 }
 
-*/
-
-/* Centrera innehållssektioner inuti main-content */
+/* Centrera innehållssektioner */
 .home-hero-section,
 .home-features-section,
 .about-page > *,
@@ -376,21 +344,14 @@ body,
     & h1 {
         font-size: var(--font-size-3xl);
         color: var(--color-accent);
-        align-items: center;
-        gap: var(--space-2);
     }
-    
+
     & p {
         font-size: var(--font-size-lg);
         color: var(--color-text);
         line-height: 1.6;
-        text-align: center;
+        max-width: 680px;
     }
-
-    /* & p {
-        max-width: 600px;
-        line-height: 1.6;
-    } */
 }
 
 .home-features-section {
@@ -398,26 +359,23 @@ body,
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--space-6);
-    padding: var(--space-8) var(--space-4);
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-4);
 
     & h2 {
-        /* font-size: var(--font-size-xl); */
         color: var(--color-accent);
-        width: 400px;
-        /* border: solid red 1px; */
-        display: flex;
-        align-items: center;
-        /* gap: var(--space-2); */
-    }
-
-    & .home-features-container {
-        display: flex;
-        gap: var(--space-6);
-        flex-wrap: wrap;
-        justify-content: center;
+        position: relative;
     }
     
+    & .home-features-container {
+        display: flex;
+        padding: var(--space-4);
+        gap: var(--space-8);
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+    }
+
     & .home-feature {
         background: var(--bg-elevated);
         border: var(--border);
@@ -425,7 +383,8 @@ body,
         padding: var(--space-6);
         max-width: 300px;
         flex: 1;
-
+        min-width: 200px;
+        
         & h3 {
             font-size: var(--font-size-lg);
             color: var(--color-accent);
@@ -435,13 +394,11 @@ body,
 }
 
 .rotating-text {
-    display: inline-block;
-    position: relative;
-    /* border: solid red 5px; */
+    font-style: italic;
+    /* border: solid red 2px; */
     color: var(--color-accent);
     font-weight: var(--font-weight-bold);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    animation: fadeInUp 0.4s ease;
+    font-size: var(--font-size-xl);
 }
 
 /* ─── About ───────────────────────────────────────── */
@@ -451,7 +408,7 @@ body,
         color: var(--color-accent);
         text-align: center;
     }
-    
+
     & p {
         font-size: var(--font-size-lg);
         color: var(--color-text);
@@ -465,7 +422,6 @@ body,
     border: var(--border);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
-    /* max-width: 700px; */
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -513,13 +469,12 @@ body,
 
 .contact-image {
     display: block;
-    position: relative;
-    box-shadow: 0 0 50px 0 var(--color-border), var(--shadow-panel);
     width: 140px;
     height: 180px;
     border-radius: var(--radius-full);
     object-fit: cover;
     align-self: center;
+    box-shadow: 0 0 50px 0 var(--color-border), var(--shadow-panel);
 }
 
 .contact-card > p {
@@ -576,23 +531,22 @@ body,
     transition: box-shadow var(--transition-base), border-color var(--transition-base);
 
     & a {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-accent);
-    letter-spacing: 0.02em;
-    transition: color var(--transition-fast);
-
-    &:hover { color: var(--color-accent-hover); }
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-accent);
+        letter-spacing: 0.02em;
+        transition: color var(--transition-fast);
+        &:hover { color: var(--color-accent-hover); }
     }
 
     & img {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: #fff;
-    display: block;
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+        background: #fff;
+        display: block;
     }
 
     &:hover {
@@ -714,15 +668,11 @@ body,
         max-width: 300px;
         border: var(--border);
         border-radius: var(--radius-md);
-        border-color: var(--color-border);
         padding: var(--space-2) var(--space-3);
     }
 }
 
-.familytree-page-canvas {
-    flex: 1;
-    min-height: 0;
-}
+.familytree-page-canvas { flex: 1; min-height: 0; }
 
 .familytree-empty {
     display: flex;
@@ -742,7 +692,6 @@ body,
     line-height: 1.6;
 }
 
-/* Sökfält i toolbar */
 .familytree-search {
     display: flex;
     align-items: center;
@@ -758,18 +707,11 @@ body,
         background: var(--bg-elevated);
         color: var(--color-text);
         outline: none;
-
         &:focus { border-color: var(--color-accent); }
     }
 }
 
 /* ─── Skapa familjeträd – wizard ──────────────────── */
-.create-family-page {
-    justify-content: space-between;
-    width: 100%;
-    height: 100%;
-}
-
 .create-flow-centered {
     display: flex;
     align-items: center;
@@ -890,24 +832,17 @@ body,
     margin: var(--space-4) 0;
 }
 
-.create-flow-canvas {
-    flex: 1;
-    height: 100%;
-    min-height: 0;
-}
+.create-flow-canvas { flex: 1; height: 100%; min-height: 0; }
 
 .canvas-minimap > * {
     border: var(--border);
-    border-radius: var(--radius-md);
     border-radius: 4px;
     width: 85px;
     height: 85px;
-    &:hover {
-        transform: scale(2) translate(-15px, -15px);
-    }
+    &:hover { transform: scale(2) translate(-15px, -15px); }
 }
 
-/* Edit-sidopanel (öppnas när man klickar en nod i edit-läge) */
+/* ─── Edit-sidopanel ──────────────────────────────── */
 .edit-panel {
     width: 280px;
     min-width: 280px;
@@ -917,7 +852,7 @@ body,
     flex-direction: column;
     overflow-y: auto;
 }
- 
+
 .edit-panel-header {
     display: flex;
     align-items: center;
@@ -925,14 +860,14 @@ body,
     padding: var(--space-4) var(--space-4) var(--space-3);
     border-bottom: var(--border);
 }
- 
+
 .edit-panel-heading {
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text);
     margin: 0;
 }
- 
+
 .edit-panel-close {
     background: none;
     border: none;
@@ -941,10 +876,9 @@ body,
     color: var(--color-text-muted);
     cursor: pointer;
     padding: 0 var(--space-1);
- 
     &:hover { color: var(--color-text); }
 }
- 
+
 .edit-panel-body {
     padding: var(--space-4);
     display: flex;
@@ -952,7 +886,7 @@ body,
     gap: var(--space-1);
     flex: 1;
 }
- 
+
 .edit-panel-field-label {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
@@ -961,12 +895,12 @@ body,
     color: var(--color-text-muted);
     margin-top: var(--space-3);
 }
- 
+
 .edit-panel-field-value {
     font-size: var(--font-size-base);
     color: var(--color-text);
 }
- 
+
 .edit-panel-actions {
     padding: var(--space-4);
     border-top: var(--border);
@@ -976,13 +910,10 @@ body,
 }
 
 /* ─── Auth-sida ───────────────────────────────────── */
-/* Bakgrundsbilden ärvs från den delade regeln ovanför */
 .auth-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    padding: var(--space-6);
 }
 
 .auth-card {
@@ -1104,9 +1035,9 @@ body,
     display: flex;
     justify-content: space-evenly;
     align-items: flex-start;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     background-color: var(--bg-surface);
-    border-top: var(--border);
+    /* border-top: var(--border); */
     padding: 1rem;
 
     & div {
@@ -1128,8 +1059,6 @@ body,
         line-height: 1.6;
     }
 
-    & a:hover { color: var(--color-accent); }
-
     & .copyright {
         width: 100%;
         text-align: center;
@@ -1145,7 +1074,6 @@ body,
     .app {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr auto;
-        scroll-behavior: smooth;
     }
 
     .header {
@@ -1154,14 +1082,13 @@ body,
         z-index: 100;
     }
 
+    /* Ta bort sidopanel-kompensationen på mobil */
     .home-page,
     .about-page,
     .contact-page,
     .auth-page {
-        width: 100dvw;
-        height: 100dvh;
-        padding: var(--space-5) var(--space-4);
-        overflow: hidden;
+        padding-right: var(--space-4);
+        padding-left: var(--space-4);
     }
 
     .header-auth-nav { display: none; }
@@ -1192,7 +1119,7 @@ body,
 
     .side-panel-overlay.open { display: block; }
 
-    .main-content { grid-column: 1;}
+    .main-content { grid-column: 1; }
 
     .familytree-page-toolbar {
         justify-content: center;
@@ -1200,45 +1127,47 @@ body,
         align-items: stretch;
         gap: var(--space-3);
 
-        & input {
-            max-width: none;
-            width: 100%;
-        }
+        & input { max-width: none; width: 100%; }
     }
 
-    /* .canvas-minimap > * {
-        max-width: 60px;
-        max-height: 60px;
-    } */
+    .canvas-minimap > * { max-width: 60px; max-height: 60px; }
+
+    /* Innehållssektioner får full bredd på mobil */
+    .home-hero-section,
+    .home-features-section,
+    .about-page > *,
+    .contact-page > * {
+        max-width: 100%;
+    }
+
+    .home-features-section {
+        & h2 {
+            width: auto;
+            justify-content: center;
+        }
+
+        & .home-feature { max-width: 100%; }
+    }
 
     .auth-card { padding: var(--space-8) var(--space-6); }
-    .home-features-section .home-feature { max-width: 100%; }
     .contact-card { padding: var(--space-6) var(--space-4); }
     .social-list { gap: var(--space-3); }
-
-    .home-features-section h2 {
-        min-width: 400px;
-        margin: 0 auto 0 var(--space-2);
-        justify-content: start;
-    }
-    .rotating-text {
-        display: inline-block;
-        position: flex;
-        color: var(--color-accent);
-        font-weight: bold;
-        /* transition: opacity 1s ease, transform 1s ease-in-out; */
-        /* animation: animate-fadeInUp 3s infinite; */
-    }
-
-    .social-item img {
-        width: 72px;
-        height: 72px;
-    }
+    .social-item img { width: 72px; height: 72px; }
 
     .footer {
         flex-direction: column;
+        justify-content: center;
         align-items: center;
+        gap: var(--space-4);
         text-align: center;
-        & div { text-align: center; }
+        padding: var(--space-3) var(--space-4);
+
+        & div { max-width: none; }
+
+        & .copyright {
+            padding-top: 0;
+            margin-top: 0;
+            line-height: 1.4;
+        }
     }
 }

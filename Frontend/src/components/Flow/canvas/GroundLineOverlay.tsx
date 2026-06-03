@@ -41,7 +41,7 @@ export default function GroundLineOverlay() {
 
         {/* Etikett */}
         <text
-          x={lineEndX - 8 / zoom}
+          x={lineEndX - 20 / zoom}
           y={-6 / zoom}
           textAnchor="end"
           fontSize={10 / zoom}

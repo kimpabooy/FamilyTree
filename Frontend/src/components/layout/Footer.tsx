@@ -6,7 +6,6 @@ export default function Footer() {
   return (
     <footer className="footer">
       <p className="copyright">
-        {" "}
         &copy; {currentYear} Familjearkivet - Made with{" "}
         <img className="heart" src={heartiIcon} alt="heart" /> by Kim Andersson
       </p>

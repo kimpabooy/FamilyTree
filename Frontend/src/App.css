@@ -75,6 +75,7 @@
     --content-max-width:        860px;
 
     --background-img:           url('../src/assets/background-tree.Webp');
+    --bg-overlay-color:         253, 246, 240;
     --bg-overlay-opacity:       0.82;
 }
 
@@ -92,6 +93,7 @@
     --bg-page:                  #2c1f18;
     --bg-surface:               #3e2820;
     --bg-elevated:              #2c1f18;
+    --bg-overlay-color:         44, 31, 24;
     --bg-overlay-opacity:       0.88;
 }
 
@@ -300,8 +302,8 @@ body,
 
     background-image:
         linear-gradient(
-            rgba(253, 246, 240, var(--bg-overlay-opacity)),
-            rgba(253, 246, 240, var(--bg-overlay-opacity))
+            rgba(var(--bg-overlay-color), var(--bg-overlay-opacity)),
+            rgba(var(--bg-overlay-color), var(--bg-overlay-opacity))
         ),
         var(--background-img);
     background-size: cover;
@@ -1154,8 +1156,18 @@ body,
 
     .footer {
         flex-direction: column;
+        justify-content: center;
         align-items: center;
+        gap: var(--space-4);
         text-align: center;
-        & div { text-align: center; }
+        padding: var(--space-3) var(--space-4);
+
+        & div { max-width: none; }
+
+        & .copyright {
+            padding-top: 0;
+            margin-top: 0;
+            line-height: 1.4;
+        }
     }
 }

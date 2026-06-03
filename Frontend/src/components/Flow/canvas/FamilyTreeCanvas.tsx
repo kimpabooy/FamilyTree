@@ -85,6 +85,7 @@ export default function FamilyTreeCanvas({
         <GroundLineOverlay />
         <Controls showInteractive={!readOnly} />
         <MiniMap
+          className="canvas-minimap"
           nodeColor={(n) => {
             if (n.type === "person") return "#93c5fd";
             if (n.type === "deceased") return "#94a3b8";

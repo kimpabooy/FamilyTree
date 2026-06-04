@@ -124,6 +124,7 @@ export default function FamilyTreeEditView({
     addParentChildEdge,
     addPartnerEdge,
     removeEdge,
+    removePerson,
     updatePersonLocally,
   } = useFamilyTreeView(familyTreeId, false);
 
@@ -188,6 +189,26 @@ export default function FamilyTreeEditView({
       setSelectedPerson(updated);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Kunde inte spara");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onDeletePerson = async () => {
+    if (!selectedPerson) return;
+
+    const confirmed = window.confirm(
+      `Är du säker på att du vill ta bort ${selectedPerson.firstName} ${selectedPerson.lastName}?`,
+    );
+    if (!confirmed) return;
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await removePerson(selectedPerson.id);
+      setSelectedPerson(null);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Kunde inte ta bort");
     } finally {
       setSaving(false);
     }
@@ -377,8 +398,18 @@ export default function FamilyTreeEditView({
               {saving ? "Sparar..." : "Spara ändringar"}
             </button>
             <button
+              type="button"
+              className="flow-btn flow-btn--danger"
+              onClick={onDeletePerson}
+              disabled={saving}
+            >
+              {saving ? "Tar bort..." : "Ta bort Släkting"}
+            </button>
+            <button
+              type="button"
               className="flow-btn flow-btn--ghost"
               onClick={() => setSelectedPerson(null)}
+              disabled={saving}
             >
               Stäng
             </button>

@@ -603,6 +603,12 @@ body,
     &:hover:not(:disabled) { opacity: 0.88; }
 }
 
+.flow-btn--danger {
+    background: #e74c3c;
+    color: #fff;
+    &:hover:not(:disabled) { opacity: 0.88; }
+}
+
 .flow-btn--ghost {
     background: transparent;
     color: var(--color-text-muted);

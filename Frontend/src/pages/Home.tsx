@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const ROTATING_WORDS = [
+  "historien lever vidare",
   "Minnen bevaras",
   "Släkten samlas",
   "Berättelser delas",
@@ -18,8 +19,8 @@ export default function Home() {
       setTimeout(() => {
         setIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
         setVisible(true);
-      }, 400);
-    }, 4000);
+      }, 500);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);

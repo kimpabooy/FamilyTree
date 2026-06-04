@@ -18,17 +18,19 @@ export default function PersonNode({ data }: NodeProps) {
   const { person } = nodeData;
   const style = genderStyle[person.gender] ?? genderStyle[2];
 
+
+  // ── PersonNode — visuellt kort med namn, födelseår och anslutningspunkter ──────────────────────────
   return (
     <div
       style={{
         background: style.bg,
         border: `1px solid ${style.border}`,
+        // border: "1px solid #d1d5db",
         borderRadius: 8,
         padding: "8px 12px",
-        fontSize: 13,
+        fontSize: 12,
         width: 200,
         textAlign: "center",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
         cursor: "default",
         userSelect: "none",
       }}

@@ -14,8 +14,8 @@ export default function Header({
   onDarkModeToggle,
   darkMode,
 }: HeaderProps) {
-  const navigate  = useNavigate();
-  const loggedIn  = isLoggedIn();
+  const navigate = useNavigate();
+  const loggedIn = isLoggedIn();
 
   const handleLogout = () => {
     logout();
@@ -74,7 +74,7 @@ export default function Header({
           onClick={onDarkModeToggle}
           aria-label="Toggle dark mode"
         >
-          {darkMode ? "☀️" : "🌙"}
+          {darkMode ? "🔆" : "🐱‍👤"}
         </button>
       </div>
     </header>

@@ -11,9 +11,16 @@ import {
   type Edge,
   type NodeTypes,
 } from "@xyflow/react";
-import PersonNode from "../nodes/PersonNode";
-import DeceasedPersonNode from "../nodes/DeceasedPersonNode";
 import RelationEdge from "../edges/FamilyRelationEdge";
+
+// -- Importer av egna nod- och kantkomponenter --
+import CustomPersonNode from "../nodes/CustomPersonNode";
+import CustomDeceasedPersonNode from "../nodes/CustomDeceasedPersonNode";
+// import PersonNode from "../nodes/PersonNode";
+// import DeceasedPersonNode from "../nodes/DeceasedPersonNode";
+
+// -- Importera overlay-komponenter för marklinje och delning av levande/avlidna --
+import TreeOverlay from "./TreeOverlay";
 import GroundLineOverlay from "./GroundLineOverlay";
 
 /*
@@ -27,8 +34,10 @@ import GroundLineOverlay from "./GroundLineOverlay";
 */
 
 const nodeTypes: NodeTypes = {
-  person: PersonNode,
-  deceased: DeceasedPersonNode,
+  // person: PersonNode,
+  // deceased: DeceasedPersonNode,
+  person: CustomPersonNode,
+  deceased: CustomDeceasedPersonNode,
 };
 
 const edgeTypes = {
@@ -82,6 +91,7 @@ export default function FamilyTreeCanvas({
         fitView
         fitViewOptions={{ padding: 0.2 }}
       >
+        <TreeOverlay />
         <GroundLineOverlay />
         <Controls showInteractive={!readOnly} />
         <MiniMap

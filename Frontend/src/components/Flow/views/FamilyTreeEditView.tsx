@@ -20,23 +20,17 @@ interface FamilyTreeEditViewProps {
   onAddPersonPanelClose?: () => void;
 }
 
-// ── Formulärtyper ────────────────────────────────────────────────────────────
-
 interface PersonFormData {
-  firstName: string;
-  lastName: string;
-  gender: number;
-  birthDate: string;
+  firstName:  string;
+  lastName:   string;
+  gender:     number;
+  birthDate:  string;
   isDeceased: boolean;
-  deathDate: string;
+  deathDate:  string;
 }
 
-// ── Delad formulärsektion ─────────────────────────────────────────────────────
-
 function PersonFormFields({
-  register,
-  errors,
-  watchIsDeceased,
+  register, errors, watchIsDeceased,
 }: {
   register: ReturnType<typeof useForm<PersonFormData>>["register"];
   errors: ReturnType<typeof useForm<PersonFormData>>["formState"]["errors"];
@@ -63,10 +57,7 @@ function PersonFormFields({
       )}
 
       <label className="edit-panel-field-label">Kön</label>
-      <select
-        className="flow-input"
-        {...register("gender", { valueAsNumber: true })}
-      >
+      <select className="flow-input" {...register("gender", { valueAsNumber: true })}>
         <option value={0}>Man</option>
         <option value={1}>Kvinna</option>
         <option value={2}>Annat / okänt</option>
@@ -82,33 +73,23 @@ function PersonFormFields({
 
       <label className="edit-panel-field-label">
         Ladda upp bild
-        <button className="flow-btn flow-btn--ghost" disabled>
-          Kommer snart
-        </button>
+        <button className="flow-btn flow-btn--ghost" disabled>Kommer snart</button>
       </label>
 
       <label className="edit-panel-field-label">
         Ladda upp dokument
-        <button className="flow-btn flow-btn--ghost" disabled>
-          Kommer snart
-        </button>
+        <button className="flow-btn flow-btn--ghost" disabled>Kommer snart</button>
       </label>
 
       {watchIsDeceased && (
         <>
           <label className="edit-panel-field-label">Dödsdatum</label>
-          <input
-            className="flow-input"
-            type="date"
-            {...register("deathDate")}
-          />
+          <input className="flow-input" type="date" {...register("deathDate")} />
         </>
       )}
     </>
   );
 }
-
-// ── Huvudkomponent ────────────────────────────────────────────────────────────
 
 export default function FamilyTreeEditView({
   familyTreeId,
@@ -116,72 +97,53 @@ export default function FamilyTreeEditView({
   onAddPersonPanelClose,
 }: FamilyTreeEditViewProps) {
   const {
-    nodes,
-    edges,
-    loading,
-    error,
-    setNodes,
-    addParentChildEdge,
-    addPartnerEdge,
-    removeEdge,
-    removePerson,
-    updatePersonLocally,
+    nodes, edges, loading, error,
+    setNodes, addParentChildEdge, addPartnerEdge,
+    removeEdge, removePerson, addPersonLocally, updatePersonLocally,
   } = useFamilyTreeView(familyTreeId, false);
 
-  const [pendingConnection, setPendingConnection] = useState<Connection | null>(
-    null,
-  );
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
+  const [selectedPerson,    setSelectedPerson]    = useState<Person | null>(null);
+  const [saving,            setSaving]            = useState(false);
+  const [saveError,         setSaveError]         = useState<string | null>(null);
 
-  // ── Formulär: redigera befintlig person ─────────────────────────────────────
   const editForm = useForm<PersonFormData>();
   const watchEditDeceased = editForm.watch("isDeceased");
 
-  // ── Formulär: lägg till ny person ───────────────────────────────────────────
-  const addForm = useForm<PersonFormData>({
-    defaultValues: { gender: 0, isDeceased: false },
-  });
+  const addForm = useForm<PersonFormData>({ defaultValues: { gender: 0, isDeceased: false } });
   const watchAddDeceased = addForm.watch("isDeceased");
 
-  // ── Klick på nod → öppna edit-panel ─────────────────────────────────────────
   const onNodeClick = useCallback(
     (nodeId: string) => {
-      const node = nodes.find((n) => n.id === nodeId);
+      const node   = nodes.find((n) => n.id === nodeId);
       const person = node?.data?.person as Person | undefined;
       if (!person) return;
 
       setSelectedPerson(person);
       setSaveError(null);
       editForm.reset({
-        firstName: person.firstName,
-        lastName: person.lastName,
-        gender: person.gender,
-        birthDate: person.birthDate
-          ? new Date(person.birthDate).toISOString().split("T")[0]
-          : "",
+        firstName:  person.firstName,
+        lastName:   person.lastName,
+        gender:     person.gender,
+        birthDate:  person.birthDate ? new Date(person.birthDate).toISOString().split("T")[0] : "",
         isDeceased: person.deathDate !== null,
-        deathDate: person.deathDate
-          ? new Date(person.deathDate).toISOString().split("T")[0]
-          : "",
+        deathDate:  person.deathDate ? new Date(person.deathDate).toISOString().split("T")[0] : "",
       });
     },
     [nodes, editForm],
   );
 
-  // ── Spara redigerad person ───────────────────────────────────────────────────
   const onEditSubmit = async (data: PersonFormData) => {
     if (!selectedPerson) return;
     setSaving(true);
     setSaveError(null);
     try {
       const req: UpdatePersonRequest = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        gender: data.gender as Gender,
-        birthDate: data.birthDate || null,
-        deathDate: data.isDeceased ? data.deathDate || null : null,
+        firstName:       data.firstName,
+        lastName:        data.lastName,
+        gender:          data.gender as Gender,
+        birthDate:       data.birthDate || null,
+        deathDate:       data.isDeceased ? data.deathDate || null : null,
         profileImageUrl: selectedPerson.profileImageUrl,
       };
       const updated = await updatePerson(selectedPerson.id, req);
@@ -196,12 +158,10 @@ export default function FamilyTreeEditView({
 
   const onDeletePerson = async () => {
     if (!selectedPerson) return;
-
     const confirmed = window.confirm(
       `Är du säker på att du vill ta bort ${selectedPerson.firstName} ${selectedPerson.lastName}?`,
     );
     if (!confirmed) return;
-
     setSaving(true);
     setSaveError(null);
     try {
@@ -214,22 +174,21 @@ export default function FamilyTreeEditView({
     }
   };
 
-  // ── Lägg till ny person ──────────────────────────────────────────────────────
   const onAddSubmit = async (data: PersonFormData) => {
     setSaving(true);
     setSaveError(null);
     try {
       const created = await createPerson({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        gender: data.gender as Gender,
-        birthDate: data.birthDate || null,
-        deathDate: data.isDeceased ? data.deathDate || null : null,
-        profileImageUrl: null, // TODO: stöd för profilbild
+        firstName:       data.firstName,
+        lastName:        data.lastName,
+        gender:          data.gender as Gender,
+        birthDate:       data.birthDate || null,
+        deathDate:       data.isDeceased ? data.deathDate || null : null,
+        profileImageUrl: null,
         familyTreeId,
       });
-      // Lägg till noden lokalt i trädet utan att ladda om hela sidan
-      updatePersonLocally(created);
+      // Använd addPersonLocally för att lägga till den nya noden i canvasen
+      addPersonLocally(created);
       addForm.reset({ gender: 0, isDeceased: false });
       onAddPersonPanelClose?.();
     } catch (err) {
@@ -239,30 +198,23 @@ export default function FamilyTreeEditView({
     }
   };
 
-  // ── Canvas-callbacks ─────────────────────────────────────────────────────────
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) =>
       setNodes((prev) => applyNodeChanges(changes, prev)),
     [setNodes],
   );
   const onEdgesChange = useCallback(() => {}, []);
-  const onConnect = useCallback(
-    (params: Connection) => setPendingConnection(params),
-    [],
-  );
+  const onConnect     = useCallback((params: Connection) => setPendingConnection(params), []);
   const onEdgesDelete = useCallback(
     async (deletedEdges: { id: string }[]) => {
-      try {
-        await Promise.all(deletedEdges.map((e) => removeEdge(e.id)));
-      } catch (err) {
-        console.error("Kunde inte ta bort relation:", err);
-      }
+      try { await Promise.all(deletedEdges.map((e) => removeEdge(e.id))); }
+      catch (err) { console.error("Kunde inte ta bort relation:", err); }
     },
     [removeEdge],
   );
 
   if (loading) return <p style={{ padding: 24 }}>Laddar familjeträd...</p>;
-  if (error) return <p style={{ padding: 24, color: "red" }}>Fel: {error}</p>;
+  if (error)   return <p style={{ padding: 24, color: "red" }}>Fel: {error}</p>;
 
   return (
     <div style={{ display: "flex", height: "100%", width: "100%" }}>
@@ -291,7 +243,6 @@ export default function FamilyTreeEditView({
         />
       )}
 
-      {/* Canvas */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <FamilyTreeCanvas
           nodes={nodes}
@@ -305,112 +256,53 @@ export default function FamilyTreeEditView({
         />
       </div>
 
-      {/* ── Panel: Lägg till ny person ── */}
+      {/* Panel: Lägg till ny person */}
       {addPersonPanelOpen && (
         <aside className="edit-panel">
           <div className="edit-panel-header">
             <h3 className="edit-panel-heading">Lägg till person</h3>
-            <button
-              className="edit-panel-close"
-              onClick={onAddPersonPanelClose}
-              aria-label="Stäng"
-            >
-              ×
-            </button>
+            <button className="edit-panel-close" onClick={onAddPersonPanelClose} aria-label="Stäng">×</button>
           </div>
-
-          <form
-            className="edit-panel-body"
-            onSubmit={addForm.handleSubmit(onAddSubmit)}
-            id="add-person-form"
-          >
+          <form className="edit-panel-body" onSubmit={addForm.handleSubmit(onAddSubmit)} id="add-person-form">
             <PersonFormFields
               register={addForm.register}
               errors={addForm.formState.errors}
               watchIsDeceased={watchAddDeceased}
             />
-            {saveError && (
-              <p className="auth-form-error" style={{ marginTop: 8 }}>
-                {saveError}
-              </p>
-            )}
+            {saveError && <p className="auth-form-error" style={{ marginTop: 8 }}>{saveError}</p>}
           </form>
-
           <div className="edit-panel-actions">
-            <button
-              type="submit"
-              form="add-person-form"
-              className="flow-btn flow-btn--primary"
-              disabled={saving}
-            >
+            <button type="submit" form="add-person-form" className="flow-btn flow-btn--primary" disabled={saving}>
               {saving ? "Sparar..." : "+ Lägg till"}
             </button>
-            <button
-              className="flow-btn flow-btn--ghost"
-              onClick={onAddPersonPanelClose}
-            >
-              Avbryt
-            </button>
+            <button className="flow-btn flow-btn--ghost" onClick={onAddPersonPanelClose}>Avbryt</button>
           </div>
         </aside>
       )}
 
-      {/* ── Panel: Redigera befintlig person ── */}
+      {/* Panel: Redigera befintlig person */}
       {selectedPerson && !addPersonPanelOpen && (
         <aside className="edit-panel">
           <div className="edit-panel-header">
-            <h3 className="edit-panel-heading">
-              {selectedPerson.firstName} {selectedPerson.lastName}
-            </h3>
-            <button
-              className="edit-panel-close"
-              onClick={() => setSelectedPerson(null)}
-              aria-label="Stäng"
-            >
-              ×
-            </button>
+            <h3 className="edit-panel-heading">{selectedPerson.firstName} {selectedPerson.lastName}</h3>
+            <button className="edit-panel-close" onClick={() => setSelectedPerson(null)} aria-label="Stäng">×</button>
           </div>
-
-          <form
-            className="edit-panel-body"
-            onSubmit={editForm.handleSubmit(onEditSubmit)}
-            id="person-edit-form"
-          >
+          <form className="edit-panel-body" onSubmit={editForm.handleSubmit(onEditSubmit)} id="person-edit-form">
             <PersonFormFields
               register={editForm.register}
               errors={editForm.formState.errors}
               watchIsDeceased={watchEditDeceased}
             />
-            {saveError && (
-              <p className="auth-form-error" style={{ marginTop: 8 }}>
-                {saveError}
-              </p>
-            )}
+            {saveError && <p className="auth-form-error" style={{ marginTop: 8 }}>{saveError}</p>}
           </form>
-
           <div className="edit-panel-actions">
-            <button
-              type="submit"
-              form="person-edit-form"
-              className="flow-btn flow-btn--primary"
-              disabled={saving}
-            >
+            <button type="submit" form="person-edit-form" className="flow-btn flow-btn--primary" disabled={saving}>
               {saving ? "Sparar..." : "Spara ändringar"}
             </button>
-            <button
-              type="button"
-              className="flow-btn flow-btn--danger"
-              onClick={onDeletePerson}
-              disabled={saving}
-            >
+            <button type="button" className="flow-btn flow-btn--danger" onClick={onDeletePerson} disabled={saving}>
               {saving ? "Tar bort..." : "Ta bort Släkting"}
             </button>
-            <button
-              type="button"
-              className="flow-btn flow-btn--ghost"
-              onClick={() => setSelectedPerson(null)}
-              disabled={saving}
-            >
+            <button type="button" className="flow-btn flow-btn--ghost" onClick={() => setSelectedPerson(null)} disabled={saving}>
               Stäng
             </button>
           </div>

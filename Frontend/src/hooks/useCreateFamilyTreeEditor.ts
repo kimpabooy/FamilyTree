@@ -12,6 +12,7 @@ import type { CreatePartnerRelationRequest } from "../types/Requests";
 
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 60;
+const GROUND_OFFSET = 120; // Förskjut noder ovanför Y=0 (marklinjen)
 
 interface LocalPerson {
   localId: string;
@@ -38,67 +39,68 @@ export interface AddPersonInput {
   deathDate: string | null;
 }
 
-// ── Layout ───────────────────────────────────────────────────────────────────
+// ── Layout ────────────────────────────────────────────────────────────────────
+//
+// Kör Dagre och förskjuter sedan alla noder uppåt så att de hamnar
+// ovanför marklinjen (Y=0). Levande noder → negativa Y-värden.
 
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
+  if (nodes.length === 0) return nodes;
+
   const graph = new dagre.graphlib.Graph();
   graph.setDefaultEdgeLabel(() => ({}));
-  graph.setGraph({ direction: "TB", nodesep: 10, ranksep: 120 });
+  graph.setGraph({ direction: "TB", nodesep: 40, ranksep: 120 });
 
   nodes.forEach((n) =>
     graph.setNode(n.id, { width: NODE_WIDTH, height: NODE_HEIGHT }),
   );
 
+  // Bara förälder-barn-kanter påverkar Dagre-layouten
   edges
     .filter((e) => !e.id.startsWith("local-partner-"))
     .forEach((e) => graph.setEdge(e.source, e.target));
 
   dagre.layout(graph);
 
-  return nodes.map((n) => {
+  const laid = nodes.map((n) => {
     const { x, y } = graph.node(n.id);
     return {
       ...n,
-      position: {
-        x: x - NODE_WIDTH / 2,
-        y: y - NODE_HEIGHT / 2,
-      },
+      position: { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2 },
     };
   });
+
+  // Hitta det lägsta Y+höjd-värdet (botten på trädet)
+  const maxY = laid.reduce(
+    (max, n) => Math.max(max, n.position.y + NODE_HEIGHT),
+    0,
+  );
+
+  // Förskjut hela gruppen uppåt så att botten hamnar vid -GROUND_OFFSET
+  return laid.map((n) => ({
+    ...n,
+    position: {
+      x: n.position.x,
+      y: n.position.y - maxY - GROUND_OFFSET,
+    },
+  }));
 }
 
-// ── Node-builder ─────────────────────────────────────────────────────────────
+// ── Node-builder ──────────────────────────────────────────────────────────────
+//
+// Sätter INTE inline style — PersonNode/DeceasedPersonNode hanterar
+// sin egen styling baserat på data.person.gender och data.person.deathDate.
 
 function buildNode(person: LocalPerson): Node {
   const isDeceased = person.deathDate !== null;
 
-  const bgColor = isDeceased
-    ? person.gender === 0
-      ? "#e0e7ef"
-      : person.gender === 1
-        ? "#ede0e7"
-        : "#e5e7eb"
-    : person.gender === 0
-      ? "#dbeafe"
-      : person.gender === 1
-        ? "#fce7f3"
-        : "#f3f4f6";
-
-  const years = [
-    person.birthDate ? new Date(person.birthDate).getFullYear() : null,
-    person.deathDate ? new Date(person.deathDate).getFullYear() : null,
-  ]
-    .filter(Boolean)
-    .join(" – ");
-
   return {
     id: person.localId,
-    // Använd samma nodtyper som FamilyTreeCanvas känner igen
     type: isDeceased ? "deceased" : "person",
     position: { x: 0, y: 0 },
     data: {
       person: {
-        id: 0, // lokal — ersätts av backend-id vid sparning
+        id: 0,
         firstName: person.firstName,
         lastName: person.lastName,
         gender: person.gender,
@@ -109,18 +111,9 @@ function buildNode(person: LocalPerson): Node {
         createdDate: "",
         updatedDate: null,
       },
-      // Fallback-label om PersonNode inte hanterar data.person
-      label: `${person.firstName} ${person.lastName}${years ? `\n${years}` : ""}`,
     },
-    style: {
-      width: NODE_WIDTH,
-      background: bgColor,
-      border: "1px solid #d1d5db",
-      borderRadius: 8,
-      fontSize: 13,
-      padding: "8px 12px",
-      opacity: isDeceased ? 0.85 : 1,
-    },
+    // Ingen style här — undviker dubbel styling ovanpå nodkomponentens egna stil
+    style: { width: NODE_WIDTH },
   };
 }
 
@@ -184,7 +177,7 @@ export function useCreateFamilyFlow() {
         id: edgeId,
         source: parentLocalId,
         target: childLocalId,
-        type: "parent-child",
+        type: "family",
         animated: false,
         style: { stroke: "#3d2202" },
       };
@@ -226,7 +219,6 @@ export function useCreateFamilyFlow() {
         type: "partner",
         animated: false,
         style: { stroke: "#e879a0", strokeDasharray: "6 3" },
-        label: "Partner",
       };
 
       setEdgesAndRef([...edgesRef.current, newEdge]);

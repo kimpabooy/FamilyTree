@@ -1,34 +1,26 @@
 import {
+  BaseEdge,
   EdgeLabelRenderer,
+  getBezierPath,
   getStraightPath,
   useReactFlow,
   type EdgeProps,
 } from "@xyflow/react";
 
-/*
-// ── FamilyRelationEdge — organiska trädgrenar som SVG-paths ──────────────────────────
-//
-// Kanttyper:
-//   "family"       — förälder-barn, quadratic curve med trädbrun färg
-//   "partner"      — partnerrelation, streckad horisontell linje
-//   "cross-ground" — korsar marklinjen, tunn rak linje
-//
-// data.readOnly = true → döljer delete-knappen
-*/
+/**
+ * FamilyRelationEdge
+ *
+ * Kanttyper:
+ *   "family"       — förälder-barn, mjuk Bezier-kurva (standard React Flow-stil)
+ *   "partner"      — partnerrelation, streckad rak linje
+ *   "cross-ground" — korsar marklinjen, tunn halvtransparent linje
+ *
+ * data.readOnly = true → döljer delete-knappen
+ */
 export default function FamilyRelationEdge(props: EdgeProps) {
   const { deleteElements } = useReactFlow();
 
-  const {
-    id,
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    type,
-    data,
-    style,
-    markerEnd,
-  } = props;
+  const { id, type, data, style, markerEnd } = props;
 
   const isReadOnly =
     (data as { readOnly?: boolean } | undefined)?.readOnly === true;
@@ -41,11 +33,7 @@ export default function FamilyRelationEdge(props: EdgeProps) {
     });
   };
 
-  /*
-  // ── Cross-ground: rak, tunn, halvtransparent ──────────────────────────
-  // Används för att visuellt skilja "över marken" (family/partner) från "under marken" (cross-ground).
-  // Använd getStraightPath för att få en rak linje mellan källan och målet.
-  */
+  // ── Cross-ground: rak, tunn, halvtransparent ──────────────────────────────
   if (isCrossGround) {
     const [path, labelX, labelY] = getStraightPath(props);
     return (
@@ -53,7 +41,6 @@ export default function FamilyRelationEdge(props: EdgeProps) {
         <path
           d={path}
           fill="none"
-          // stroke="transparent"
           stroke="#9ca3af"
           strokeWidth={1.5}
           strokeOpacity={0.25}
@@ -68,15 +55,9 @@ export default function FamilyRelationEdge(props: EdgeProps) {
     );
   }
 
-  /*
-  // ── Partner: streckad horisontell/diagonal linje ──────────────────────────
-  //  Används för att visa partnerrelationer.
-  // Streckad linje för att visuellt skilja från familjeband.
-  */
+  // ── Partner: streckad rak linje ───────────────────────────────────────────
   if (isPartner) {
-    const midX = (sourceX + targetX) / 2;
-    const midY = (sourceY + targetY) / 2;
-    const path = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+    const [path, labelX, labelY] = getStraightPath(props);
     const partnerColor =
       (style as React.CSSProperties | undefined)?.stroke ?? "#e879a0";
     return (
@@ -87,99 +68,39 @@ export default function FamilyRelationEdge(props: EdgeProps) {
           stroke={String(partnerColor)}
           strokeWidth={1.5}
           strokeDasharray="6 3"
-          strokeOpacity={0.7}
+          strokeOpacity={0.8}
         />
         {!isReadOnly && (
           <EdgeLabelRenderer>
-            <DeleteButton x={midX} y={midY} onDelete={onDelete} />
+            <DeleteButton x={labelX} y={labelY} onDelete={onDelete} />
           </EdgeLabelRenderer>
         )}
       </>
     );
   }
 
-  /*
-  // ── Family: organisk trädgren ─────────────────────────────────────────────
-  //
-  // Quadratic Bezier med kontrollpunkten horisontellt centrerad och
-  // vertikalt placerad nära källan — ger en "gren som böjer sig neråt"-känsla.
-  //
-  // Tjockleken minskar med avstånd: nära noder = tunnare (löv), långt = tjockare (stam).
-  */
-  const dy = Math.abs(targetY - sourceY);
-  const strokeWidth = Math.max(1, Math.min(4, dy / 60));
-
-  // Liten organisk wobbleX baserad på x-positionen
-  const wobbleX = Math.sin(targetX * 0.05) * 8;
-  // const wobbleY = Math.cos(targetX * 0.05) * 4;
-
-  const controlX = sourceX + (targetX - sourceX) * 0.5 + wobbleX;
-  const controlY = sourceY + (targetY - sourceY) * 0.35;
-
-  // SVG-pathen för en quadratic Bezier-kurva
-  const path = `M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`;
-  const midX = sourceX + (targetX - sourceX) * 0.5;
-  const midY = sourceY + (targetY - sourceY) * 0.5;
-  const gradId = `grad-${id}`;
-
-  // Källan är alltid mörkare (stam), målet ljusare (gren).
-  // Gren Färger: mörkare brun → ljusare brun, beroende på riktning (uppåt/neråt).
-  const isGoingDown = targetY < sourceY;
-  const darkColor = "#080604";
-  const lightColor = "#8b6340";
-  // const darkColor = "#5c3d1e";
-  // const lightColor = "#8b6340";
+  // ── Family: mjuk Bezier-kurva (React Flow standard) ───────────────────────
+  const [edgePath, labelX, labelY] = getBezierPath(props);
 
   return (
     <>
-      <defs>
-        <linearGradient
-          id={gradId}
-          x1={sourceX}
-          y1={sourceY}
-          x2={targetX}
-          y2={targetY}
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0%" stopColor={isGoingDown ? darkColor : lightColor} />
-          <stop
-            offset="100%"
-            stopColor={isGoingDown ? lightColor : darkColor}
-          />
-        </linearGradient>
-      </defs>
-
-      {/* Skugga/djup-lager — lite mörkare och bredare under huvudlinjen */}
-      <path
-        d={path}
-        fill="none"
-        stroke="#3b2510"
-        strokeWidth={strokeWidth + 1}
-        strokeOpacity={0.12}
-        strokeLinecap="round"
-      />
-
-      {/* Huvud-grenen */}
-      <path
-        d={path}
-        fill="none"
-        stroke={`url(#${gradId})`}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
+      <BaseEdge
+        path={edgePath}
+        style={{
+          ...props.style,
+          stroke: "#6b7280",
+          strokeWidth: 1.5,
+        }}
         markerEnd={markerEnd}
       />
-
-      {/* Delete-knapp */}
       {!isReadOnly && (
         <EdgeLabelRenderer>
-          <DeleteButton x={midX} y={midY} onDelete={onDelete} />
+          <DeleteButton x={labelX} y={labelY} onDelete={onDelete} />
         </EdgeLabelRenderer>
       )}
     </>
   );
 }
-
-// ── Delete-knapp ──────────────────────────────────────────────────────────────
 
 function DeleteButton({
   x,

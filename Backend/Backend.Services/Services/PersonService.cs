@@ -38,7 +38,6 @@ namespace Backend.Services.Services
                 ProfileImageUrl = dto.ProfileImageUrl,
                 FamilyTreeId = dto.FamilyTreeId
             };
-
             var created = _unitOfWork.PersonRepository.Add(toCreate);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return MapToResponse(created);
@@ -66,12 +65,37 @@ namespace Backend.Services.Services
             var existing = await _unitOfWork.PersonRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return false;
 
+            // Ta bort alla förälder-barn-relationer där personen ingår (som förälder eller barn)
+            // Hämtar barn där person är förälder och hämtar föräldrar där person är barn.
+            var asParent = await _unitOfWork.ParentChildRelationRepository.GetChildrenAsync(id, cancellationToken);
+            var asChild = await _unitOfWork.ParentChildRelationRepository.GetParentsAsync(id, cancellationToken);
+
+            // Hämtar alla relationer i familjeträdet och
+            // filtrerar på personId för att hitta alla relationer där personen ingår.
+            var allPcRelations = await _unitOfWork.ParentChildRelationRepository
+                .GetByFamilyTreeIdAsync(existing.FamilyTreeId, cancellationToken);
+
+            var relationsToRemove = allPcRelations
+                .Where(pc => pc.ParentId == id || pc.ChildId == id)
+                .ToList();
+
+            foreach (var relation in relationsToRemove)
+                _unitOfWork.ParentChildRelationRepository.Remove(relation);
+
+            // Ta bort partnerrelationer där personen ingår
+            var allPartnerRelations = await _unitOfWork.PartnerRelationRepository
+                .GetByPersonIdAsync(id, cancellationToken);
+
+            foreach (var relation in allPartnerRelations)
+                _unitOfWork.PartnerRelationRepository.Remove(relation);
+
+            // Ta bort personen
             _unitOfWork.PersonRepository.Remove(existing);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;
         }
 
-        // Helper method to map Person to ResponsePerson
         public static ResponsePerson MapToResponse(Person person) => new()
         {
             Id = person.Id,

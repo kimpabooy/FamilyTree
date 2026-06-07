@@ -31,7 +31,6 @@ namespace Backend.Services.Services
 
         public async Task<ResponseFamilyTree?> CreateAsync(RequestCreateFamilyTree request, string ownerId, CancellationToken cancellationToken = default)
         {
-            // Ensure owner exists (defensive check)
             var owner = await _unitOfWork.UserRepository.GetByIdAsync(ownerId, cancellationToken);
             if (owner == null)
             {
@@ -69,12 +68,39 @@ namespace Backend.Services.Services
             var existing = await _unitOfWork.FamilyTreeRepository.GetByIdAsync(id, cancellationToken);
             if (existing is null) return false;
 
+            // Hämta alla personer i trädet
+            var persons = await _unitOfWork.PersonRepository
+                .GetAllByFamilyTreeIdAsync(id, cancellationToken);
+
+            foreach (var person in persons)
+            {
+                // Ta bort alla förälder-barn-relationer för varje person
+                var allPersonConnections = await _unitOfWork.ParentChildRelationRepository
+                    .GetByFamilyTreeIdAsync(id, cancellationToken);
+
+                var personPcRelations = allPersonConnections
+                    .Where(personConnection => personConnection.ParentId == person.Id || personConnection.ChildId == person.Id)
+                    .ToList();
+
+                foreach (var relation in personPcRelations)
+                    _unitOfWork.ParentChildRelationRepository.Remove(relation);
+
+                // Ta bort alla partnerrelationer för varje person
+                var partnerRelations = await _unitOfWork.PartnerRelationRepository
+                    .GetByPersonIdAsync(person.Id, cancellationToken);
+
+                foreach (var relation in partnerRelations)
+                    _unitOfWork.PartnerRelationRepository.Remove(relation);
+
+                _unitOfWork.PersonRepository.Remove(person);
+            }
+
+            // Slutligen ta bort trädet
             _unitOfWork.FamilyTreeRepository.Remove(existing);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return true;
         }
 
-        // En hjälpfunktion för att mappa FamilyTree-modellen till ResponseFamilyTree DTO:n
         private static ResponseFamilyTree MapToResponse(FamilyTree tree) => new()
         {
             Id = tree.Id,

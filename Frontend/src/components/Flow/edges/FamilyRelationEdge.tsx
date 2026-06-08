@@ -17,9 +17,9 @@ import {
  *
  * data.readOnly = true → döljer delete-knappen
  */
+
 export default function FamilyRelationEdge(props: EdgeProps) {
   const { deleteElements } = useReactFlow();
-
   const { id, type, data, style, markerEnd } = props;
 
   const isReadOnly =
@@ -27,13 +27,18 @@ export default function FamilyRelationEdge(props: EdgeProps) {
   const isCrossGround = type === "cross-ground";
   const isPartner = type === "partner";
 
+  // Partner-linje som korsar marklinjen — sätts av hooken
+  const partnerCrossesGround =
+    isPartner &&
+    (data as { crossGround?: boolean } | undefined)?.crossGround === true;
+
   const onDelete = async () => {
     await deleteElements({
       edges: [{ id, source: props.source, target: props.target }],
     });
   };
 
-  // ── Cross-ground: rak, tunn, halvtransparent ──────────────────────────────
+  // ── Cross-ground ──────────────────────────────────────────────────────────
   if (isCrossGround) {
     const [path, labelX, labelY] = getStraightPath(props);
     return (
@@ -55,11 +60,15 @@ export default function FamilyRelationEdge(props: EdgeProps) {
     );
   }
 
-  // ── Partner: streckad rak linje ───────────────────────────────────────────
+  // ── Partner ───────────────────────────────────────────────────────────────
   if (isPartner) {
     const [path, labelX, labelY] = getStraightPath(props);
     const partnerColor =
       (style as React.CSSProperties | undefined)?.stroke ?? "#e879a0";
+
+    // Sänk opacitet om partnerna är på varsitt håll om marklinjen
+    const opacity = partnerCrossesGround ? 0.2 : 0.8;
+
     return (
       <>
         <path
@@ -68,7 +77,7 @@ export default function FamilyRelationEdge(props: EdgeProps) {
           stroke={String(partnerColor)}
           strokeWidth={1.5}
           strokeDasharray="6 3"
-          strokeOpacity={0.8}
+          strokeOpacity={opacity}
         />
         {!isReadOnly && (
           <EdgeLabelRenderer>
@@ -79,18 +88,13 @@ export default function FamilyRelationEdge(props: EdgeProps) {
     );
   }
 
-  // ── Family: mjuk Bezier-kurva (React Flow standard) ───────────────────────
+  // ── Family: mjuk Bezier ───────────────────────────────────────────────────
   const [edgePath, labelX, labelY] = getBezierPath(props);
-
   return (
     <>
       <BaseEdge
         path={edgePath}
-        style={{
-          ...props.style,
-          stroke: "#6b7280",
-          strokeWidth: 1.5,
-        }}
+        style={{ ...props.style, stroke: "#6b7280", strokeWidth: 1.5 }}
         markerEnd={markerEnd}
       />
       {!isReadOnly && (

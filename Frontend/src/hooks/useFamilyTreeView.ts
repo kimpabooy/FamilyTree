@@ -250,7 +250,6 @@ function classifyEdge(
   const base = readOnly
     ? { ...edge, data: { ...(edge.data ?? {}), readOnly: true } }
     : edge;
-  if (base.type !== "family") return base;
 
   const source = nodeMap.get(base.source);
   const target = nodeMap.get(base.target);
@@ -260,7 +259,17 @@ function classifyEdge(
     (source.position.y < 0 && target.position.y > 0) ||
     (source.position.y > 0 && target.position.y < 0);
 
-  return crosses ? { ...base, type: "cross-ground" } : base;
+  // Family-kanter som korsar marklinjen → "cross-ground"-typ
+  if (base.type === "family" && crosses) {
+    return { ...base, type: "cross-ground" };
+  }
+
+  // Partner-kanter som korsar marklinjen → behåll typen men markera med crossGround
+  if (base.type === "partner" && crosses) {
+    return { ...base, data: { ...(base.data ?? {}), crossGround: true } };
+  }
+
+  return base;
 }
 
 // ── Node/Edge-builders ────────────────────────────────────────────────────────
@@ -297,6 +306,7 @@ function buildPartnerEdge(sourceId: number, relation: PartnerRelation): Edge {
   };
 }
 
+// ── Datahämtning för partnerrelationer ──────────────────────────────────────
 async function fetchPartnerSeeds(persons: Person[]) {
   const seen = new Set<number>();
   const seeds: { sourceId: number; relation: PartnerRelation }[] = [];
@@ -313,6 +323,7 @@ async function fetchPartnerSeeds(persons: Person[]) {
   return seeds;
 }
 
+// ── Layout + klassificering i ett steg ───────────────────────────────────────
 function buildLayout(allNodes: Node[], allEdges: Edge[], readOnly: boolean) {
   const validNodeIds = new Set(allNodes.map((n) => n.id));
   const validEdges = allEdges.filter(

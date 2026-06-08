@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import Button from "../Ui/Button";
-import { isLoggedIn, logout } from "../../services/AuthService";
+import { isLoggedIn, logout, getDisplayName } from "../../services/AuthService";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -16,6 +16,7 @@ export default function Header({
 }: HeaderProps) {
   const navigate = useNavigate();
   const loggedIn = isLoggedIn();
+  const displayName = getDisplayName();
 
   const handleLogout = () => {
     logout();
@@ -24,7 +25,6 @@ export default function Header({
 
   return (
     <header className="header">
-      {/* Vänster zon */}
       <div className="header-left">
         <button
           className="menu-toggle"
@@ -37,24 +37,27 @@ export default function Header({
         </button>
       </div>
 
-      {/* Mitten zon — alltid centrerad */}
       <Link to="/" className="header-logo-link">
         <img src={logo} alt="Familjearkivet Logo" />
         <h1>Familjearkivet</h1>
       </Link>
 
-      {/* Höger zon */}
       <div className="header-right">
         <nav className="header-auth-nav">
           {loggedIn ? (
-            /* Inloggad — visa bara "Logga ut" */
-            <Button
-              label="Logga ut"
-              variant="secondary"
-              onClick={handleLogout}
-            />
+            <>
+              {displayName && (
+                <span className="header-greeting">
+                  Välkommen, {displayName}
+                </span>
+              )}
+              <Button
+                label="Logga ut"
+                variant="secondary"
+                onClick={handleLogout}
+              />
+            </>
           ) : (
-            /* Utloggad — visa "Logga in" + "Skapa konto" */
             <>
               <Button
                 label="Logga in"
@@ -74,7 +77,7 @@ export default function Header({
           onClick={onDarkModeToggle}
           aria-label="Toggle dark mode"
         >
-          {darkMode ? "🔆" : "🐱‍👤"}
+          {darkMode ? "🌞" : "🌚"}
         </button>
       </div>
     </header>
